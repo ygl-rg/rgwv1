@@ -1,0 +1,11 @@
+[Unit]
+Description=run rgw
+After=network.target
+
+[Service]
+LimitNOFILE=20000
+ExecStart=/usr/bin/python3 /home/pi/rgw3/__main__.py rgw_node /home/pi/rgw_cfg.json
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
