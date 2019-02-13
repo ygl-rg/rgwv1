@@ -92,11 +92,15 @@ class Node_URLs:
     APP_ADM_SENSOR = r"adm/sensor"
     APP_EDIT_SWITCH = r"edit/switch"
     APP_ADM_SWITCH = r"adm/switch"
+    APP_ADM_ZB_MODULE = r"adm/zbmodule"
+    APP_RESTORE_ZB_MODULE = r"adm/zbmodule/restore"
+    APP_SYNC_ZB_DEVICE = r'adm/zbdevice/sync'
     API_EM = r"api/em"
     API_SYS_CFG = r'api/syscfg'
     API_SENSOR_ADM = r'api/sensoradm'
     API_SENSOR_TRIGGER = r"api/sensortrigger"
     API_SWITCH_ADM = r'api/switchadm'
+    API_ZB_MODULE_ADM = r'api/zbmoduleadm'
     EXPORT_FMT = "export/{0}"
 
 
@@ -123,6 +127,8 @@ class Node_TPL_NAMES:
     APP_ADM_SENSOR_TRIGGER = r"app_adm_sensor_trigger_tpl.html"
     APP_EDIT_SWITCH = r'app_edit_switch_tpl.html'
     APP_ADM_SWITCH = r'app_adm_switch_tpl.html'
+    APP_ADM_ZB_MODULE = r'app_adm_zb_module_tpl.html'
+    APP_RESTORE_ZB_MODULE = r'app_restore_zb_module_tpl.html'
 
 
 class Keys:

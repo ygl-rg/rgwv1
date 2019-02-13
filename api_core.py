@@ -260,9 +260,9 @@ class SysCfg:
 
     @classmethod
     async def GetGwInfo(cls):
-        tbl = await cls.Get(['select * from rgw_sys_cfg where key in (?,?)',
-                             ('gw_url', 'gw_pwd')])
-        if len(tbl) == 2 and len(tbl['gw_url']) > 0 and len(tbl['gw_pwd']) > 0:
+        tbl = await cls.Get(['select * from rgw_sys_cfg where key = ?',
+                             ('gw_url',)])
+        if len(tbl) == 1 and len(tbl['gw_url']) > 0:
             return tbl
         else:
             return None
@@ -272,9 +272,9 @@ class SysCfg:
         tbl = await cls.GetGwInfo()
         if tbl:
             url = "{0}/{1}".format(tbl['gw_url'], rpc_no)
-            return url, tbl['gw_pwd']
+            return url
         else:
-            return '', None
+            return ''
 
     @classmethod
     async def GetElasticEmailInfo(cls):

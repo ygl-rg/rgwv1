@@ -4,27 +4,6 @@ import treq
 import rg_lib
 import api_core
 import node_models as models
-import rgw_consts
-
-MAX_OP_COUNT = 1000
-
-
-async def IncrOpCount(deviceid):
-    key = rgw_consts.Keys.DEVICE_OP_COUNT.format(deviceid)
-    return await api_core.BizDB.redis_conn.incr(key)
-
-
-async def IsOverflow(deviceid):
-    key = rgw_consts.Keys.DEVICE_OP_COUNT.format(deviceid)
-    bytes_obj = await api_core.BizDB.redis_conn.get(key)
-    if bytes_obj:
-        return int(bytes_obj) > MAX_OP_COUNT
-    else:
-        return False
-
-
-async def RemoveOpCount(deviceid):
-    return await api_core.BizDB.redis_conn.delete(rgw_consts.Keys.DEVICE_OP_COUNT.format(deviceid))
 
 
 async def Req(rpc_no, method, params, timeout):
@@ -34,7 +13,6 @@ async def Req(rpc_no, method, params, timeout):
     try:
         url, pwd = await api_core.SysCfg.GetGwApiUrl(rpc_no)
         if url:
-            tbl['params'][0]['token'] = pwd
             resp_defer = await treq.post(url, data=json.dumps(tbl).encode('utf-8'), timeout=timeout)
             res = await resp_defer.json()
             if res['error']:
@@ -61,12 +39,51 @@ async def ZbDeviceReq(method, params, timeout):
     return await Req('rxg/api/zbdeviceadm', method, params, timeout)
 
 
-def ListModule(list_no):
-    return ZbModuleReq('ListModule', [{'list_no': list_no}], 3)
+class ZbModule:
+    @classmethod
+    async def Req(cls, method, params, timeout):
+        return await Req('rxg/api/zbmoduleadm', method, params, timeout)
+
+    @classmethod
+    async def ListModule(cls, list_no):
+        return await cls.Req('ListModule', [{'list_no': list_no}], 3)
+
+    @classmethod
+    async def ProbeDevice(cls, moduleid):
+        return await cls.Req('ProbeDevice', [{'moduleid': moduleid}], 600)
+
+    @classmethod
+    async def ResetModule(cls, moduleid):
+        return await cls.Req('ResetModule', [{'moduleid': moduleid}], 600)
+
+    @classmethod
+    async def BackupModule(cls, moduleid):
+        return await cls.Req('BackupModule', [{'moduleid': moduleid}], 600)
+
+    @classmethod
+    async def RestoreModule(cls, src_moduleid, target_moduleid):
+        return await cls.Req('RestoreModule', [{'src_moduleid': src_moduleid,
+                                                'target_moduleid': target_moduleid}], 600)
+
+    @classmethod
+    async def RebootModule(cls, moduleid):
+        return await cls.Req('RebootModule', [{'moduleid': moduleid}], 600)
+
+    @classmethod
+    async def RebootAll(cls):
+        return await cls.Req('RebootAll', [{}], 600)
 
 
-def ProbeDevice(moduleid):
-    return ZbModuleReq('ProbeDevice', [{'moduleid': moduleid}], 600)
+class ZbDevice:
+    @classmethod
+    async def Req(cls, method, params, timeout):
+        return await Req('rxg/api/zbdeviceadm', method, params, timeout)
+
+
+class EM:
+    @classmethod
+    async def Req(cls, method, params, timeout):
+        return await Req('rxg/api/em', method, params, timeout)
 
 
 def ListDevice(list_no):
@@ -125,7 +142,3 @@ async def CloseSwitch(switchid):
 
 async def RebootDevice(deviceids):
     return await ZbDeviceReq('RebootDevice', [{"deviceids": deviceids}], 10)
-
-
-async def RebootAll():
-    return await ZbModuleReq('RebootAll', [{}], 10)

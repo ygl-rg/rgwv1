@@ -50,8 +50,11 @@ async def CheckUser2(pwd):
 
 
 async def CheckRight(token):
-    tbl = await Get(token)
-    if tbl:
-        return tbl['pwd']
+    if token:
+        tbl = await Get(token)
+        if tbl:
+            return tbl['pwd']
+        else:
+            return await CheckUser2(token)
     else:
-        return await CheckUser2(token)
+        raise rg_lib.RGError(models.ErrorTypes.NoRight())

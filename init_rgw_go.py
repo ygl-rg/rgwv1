@@ -22,7 +22,6 @@ def SetEmailSender(connid):
 
 def SetRXG(connid):
     connid.execute("insert into rgw_sys_cfg(key,val) values(?,?)", ("gw_url", "http://localhost:8000"))
-    connid.execute("insert into rgw_sys_cfg(key,val) values(?,?)", ("gw_pwd", "root"))
 
 
 def main(db_path):

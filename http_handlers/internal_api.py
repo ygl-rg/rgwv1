@@ -4,6 +4,7 @@ from . import em_api
 from . import sys_cfg_api
 from http_handlers import sensor_api, switch_api, \
     sensor_trigger_api as cond_api
+from . import zb_module_api
 
 
 class Base(rg_lib.AsyncDynFuncHandler):
@@ -69,3 +70,14 @@ class SwitchAdm(Base):
                          'RemoveSwitch': functools.partial(switch_api.RemoveSwitch, self),
                          'SearchSwitch': functools.partial(switch_api.SearchSwitch, self),
                          'SyncSwitch': functools.partial(switch_api.SyncSwitch, self)}
+
+
+class ZbModuleAdm(Base):
+    def initialize(self, **kwargs):
+        self.FUNC_TBL = {"ListModule": functools.partial(zb_module_api.ListModule, self),
+                         'ProbeDevice': functools.partial(zb_module_api.ProbeDevice, self),
+                         'ResetModule': functools.partial(zb_module_api.ResetModule, self),
+                         'BackupModule': functools.partial(zb_module_api.BackupModule, self),
+                         'RestoreModule': functools.partial(zb_module_api.RestoreModule, self),
+                         'RebootModule': functools.partial(zb_module_api.RebootModule, self),
+                         'RebootAll': functools.partial(zb_module_api.RebootAll, self)}

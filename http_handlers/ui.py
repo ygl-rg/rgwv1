@@ -52,14 +52,21 @@ def GetLangCode(req_handler):
     return rg_lib.Locale.GetLocale(code)
 
 
+async def CheckRight(req_handler):
+    sid = GetToken(req_handler)
+    return await api_auth.CheckRight(sid)
+
+
 class AppAdmLogin(UIBase):
     def initialize(self, **kwargs):
         self.url_tbl = {'sensor': rgw_consts.Node_URLs.APP_ADM_SENSOR,
                         'switch': rgw_consts.Node_URLs.APP_ADM_SWITCH,
+                        'zb_module': rgw_consts.Node_URLs.APP_ADM_ZB_MODULE,
                         'sys_cfg': rgw_consts.Node_URLs.APP_SYS_CFG}
 
         self.adm_types = [{'name': 'Sensor/传感器', 'value': 'sensor'},
                           {'name': 'Switch/开关', 'value': 'switch', "checked": 1},
+                          {'name': 'Zigbee Module', 'value': 'zb_module'},
                           {'name': 'System Config/系统参数', 'value': 'sys_cfg'}]
 
     def RenderPage(self, user_lang, hint):
@@ -82,7 +89,7 @@ class AppAdmLogin(UIBase):
             if models.ErrorTypes.TypeOfAccessOverLimit(err):
                 self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
             else:
-                self.finish(rgw_consts.WebContent.SERVER_ERROR)
+                raise cyclone_web.HTTPError(500)
 
     async def async_post(self):
         await api_req_limit.CheckMinuteRate("adm_login", rg_lib.Cyclone.TryGetRealIp(self), 5)
@@ -145,7 +152,7 @@ class AppLoginBase(UIBase):
     async def async_get(self):
         try:
             await api_req_limit.CheckMinuteRate(rg_lib.String.toutf8(self.GetLoginUrl()),
-                                                    rg_lib.Cyclone.TryGetRealIp(self), 5)
+                                                rg_lib.Cyclone.TryGetRealIp(self), 5)
             self.RenderPage("")
         except rg_lib.RGError as err:
             if models.ErrorTypes.TypeOfAccessOverLimit(err):
@@ -221,23 +228,18 @@ class ViewSwitchSchedule(UIBase):
     async def handlePage_(self):
         try:
             await api_req_limit.CheckMinuteRate("ViewSwitchSchedule", rg_lib.Cyclone.TryGetRealIp(self), 3)
-            sid = GetToken(self)
+            sid = await CheckRight(self)
             ulang = GetLangCode(self)
-            if sid:
-                await api_auth.CheckRight(sid)
-                label_tbl = self.GetLabel()[ulang]
-                self.render(rgw_consts.Node_TPL_NAMES.VIEW_SWITCH_SCHEDULES,
-                            app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                            app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                            app_template_dir=g_vars.g_cfg['web']['template_dir'],
-                            title=self.GetTitle(),
-                            sessionid=sid, user_lang=ulang,
-                            valid_label=label_tbl['valid'],
-                            invalid_label=label_tbl['invalid'],
-                            remove_label=label_tbl['remove'])
-            else:
-                login_url = DetectLoginPortal(self)
-                self.redirect(login_url)
+            label_tbl = self.GetLabel()[ulang]
+            self.render(rgw_consts.Node_TPL_NAMES.VIEW_SWITCH_SCHEDULES,
+                        app_js_dir=g_vars.g_cfg['web']['js_dir'],
+                        app_css_dir=g_vars.g_cfg['web']['css_dir'],
+                        app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                        title=self.GetTitle(),
+                        sessionid=sid, user_lang=ulang,
+                        valid_label=label_tbl['valid'],
+                        invalid_label=label_tbl['invalid'],
+                        remove_label=label_tbl['remove'])
         except rg_lib.RGError as rge:
             if models.ErrorTypes.TypeOfNoRight(rge):
                 self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
@@ -245,8 +247,6 @@ class ViewSwitchSchedule(UIBase):
                 self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
             else:
                 self.finish(rgw_consts.WebContent.SERVER_ERROR)
-        except Exception:
-            self.finish(rgw_consts.WebContent.SERVER_ERROR)
 
     async def async_get(self):
         await self.handlePage_()
@@ -270,30 +270,26 @@ class ViewSensorMinsAvgTrend(UIBase):
     async def handlePage_(self):
         try:
             await api_req_limit.CheckMinuteRate("ViewSensorMinsAvgTrend", rg_lib.Cyclone.TryGetRealIp(self), 3)
-            sid = GetToken(self)
+            sid = await CheckRight(self)
             ulang = GetLangCode(self)
             temp_str = self.get_argument('sensorids')
             sensorids = c_escape.json_decode(c_escape.url_unescape(temp_str))
             if len(sensorids) < 1:
                 raise cyclone_web.HTTPError(404, 'no sensor')
-            if sid:
-                await api_auth.CheckRight(sid)
-                sql_str = rg_lib.Sqlite.GenInSql("""select COALESCE(name,'') name, id from rgw_sensor where id in """,
-                                                 sensorids)
-                sensors = await api_core.BizDB.Query([sql_str, sensorids])
-                if len(sensors) > 0:
-                    self.render(rgw_consts.Node_TPL_NAMES.VIEW_SENSOR_MINS_AVG_TREND,
-                                app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                                app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                                app_template_dir=g_vars.g_cfg['web']['template_dir'],
-                                title=self.GetTitle(),
-                                sessionid=sid, user_lang=ulang,
-                                sensorids=sensorids,
-                                mins_interval_tbls=self.GetMinsInterval())
-                else:
-                    self.finish("no sensor")
+            sql_str = rg_lib.Sqlite.GenInSql("""select COALESCE(name,'') name, id from rgw_sensor where id in """,
+                                             sensorids)
+            sensors = await api_core.BizDB.Query([sql_str, sensorids])
+            if len(sensors) > 0:
+                self.render(rgw_consts.Node_TPL_NAMES.VIEW_SENSOR_MINS_AVG_TREND,
+                            app_js_dir=g_vars.g_cfg['web']['js_dir'],
+                            app_css_dir=g_vars.g_cfg['web']['css_dir'],
+                            app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                            title=self.GetTitle(),
+                            sessionid=sid, user_lang=ulang,
+                            sensorids=sensorids,
+                            mins_interval_tbls=self.GetMinsInterval())
             else:
-                self.redirect(DetectLoginPortal(self))
+                self.finish("no sensor")
         except rg_lib.RGError as rge:
             if models.ErrorTypes.TypeOfNoRight(rge):
                 self.redirect(DetectLoginPortal(self))
@@ -301,11 +297,6 @@ class ViewSensorMinsAvgTrend(UIBase):
                 self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
             else:
                 self.finish(rgw_consts.WebContent.SERVER_ERROR)
-        except cyclone_web.HTTPError:
-            raise
-        except Exception:
-            log.err()
-            self.finish(rgw_consts.WebContent.SERVER_ERROR)
 
     async def async_get(self):
         return await self.handlePage_()
@@ -329,33 +320,30 @@ class ViewSensorMinsAvgData(UIBase):
     async def handlePage_(self):
         try:
             await api_req_limit.CheckMinuteRate("ViewSensorMinsAvgData", rg_lib.Cyclone.TryGetRealIp(self))
-            sid = GetToken(self)
+            sid = await CheckRight(self)
             ulang = GetLangCode(self)
             temp = self.get_argument('ids', '')
             sensorids = c_escape.json_decode(c_escape.url_unescape(temp))
             if len(sensorids) < 1:
                 raise cyclone_web.HTTPError(404, 'no sensor')
-            if sid:
-                await api_auth.CheckRight(sid)
-                sql_str = rg_lib.Sqlite.GenInSql("""select COALESCE(name,'') name, id
+
+            sql_str = rg_lib.Sqlite.GenInSql("""select COALESCE(name,'') name, id
                                                         from rgw_sensor where id in """,
-                                                 sensorids)
-                sensors = await api_core.BizDB.Query([sql_str, sensorids])
-                sensors_tbl = {i['id']: i for i in sensors}
-                if len(sensors) > 0:
-                    self.render(rgw_consts.Node_TPL_NAMES.VIEW_SENSOR_MINS_AVG_DATA,
-                                app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                                app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                                app_template_dir=g_vars.g_cfg['web']['template_dir'],
-                                title=self.GetTitle(),
-                                sessionid=sid, user_lang=ulang,
-                                sensorids=sensorids,
-                                sensors_tbl=sensors_tbl,
-                                mins_interval_tbls=self.GetMinsInterval())
-                else:
-                    self.finish("no sensor")
+                                             sensorids)
+            sensors = await api_core.BizDB.Query([sql_str, sensorids])
+            sensors_tbl = {i['id']: i for i in sensors}
+            if len(sensors) > 0:
+                self.render(rgw_consts.Node_TPL_NAMES.VIEW_SENSOR_MINS_AVG_DATA,
+                            app_js_dir=g_vars.g_cfg['web']['js_dir'],
+                            app_css_dir=g_vars.g_cfg['web']['css_dir'],
+                            app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                            title=self.GetTitle(),
+                            sessionid=sid, user_lang=ulang,
+                            sensorids=sensorids,
+                            sensors_tbl=sensors_tbl,
+                            mins_interval_tbls=self.GetMinsInterval())
             else:
-                self.finish(rgw_consts.WebContent.PLEASE_LOGIN)
+                self.finish("no sensor")
         except rg_lib.RGError as rge:
             if models.ErrorTypes.TypeOfNoRight(rge):
                 self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
@@ -363,11 +351,6 @@ class ViewSensorMinsAvgData(UIBase):
                 self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
             else:
                 self.finish(rgw_consts.WebContent.SERVER_ERROR)
-        except cyclone_web.HTTPError:
-            raise
-        except Exception:
-            log.err()
-            self.finish(rgw_consts.WebContent.SERVER_ERROR)
 
     async def async_get(self):
         return await self.handlePage_()
@@ -387,28 +370,24 @@ class ViewSwitchOnLogDetail(UIBase):
     async def handlePage_(self):
         try:
             await api_req_limit.CheckMinuteRate("ViewSwitchOnLogDetail", rg_lib.Cyclone.TryGetRealIp(self), 3)
-            sid = GetToken(self)
+            sid = await CheckRight(self)
             ulang = GetLangCode(self)
             temp = self.get_argument('switchid', '')
-            if sid:
-                await api_auth.CheckRight(sid)
-                if len(temp) == 0:
-                    raise cyclone_web.HTTPError(404, 'no switch')
-                row = await api_core.Switch.Get(["select id, name from rgw_switch where id=?", (temp,)])
-                if row is None:
-                    raise cyclone_web.HTTPError(404, 'no switch')
-                label_tbl = self.GetLabel()[ulang]
-                self.render(rgw_consts.Node_TPL_NAMES.VIEW_SWITCH_ON_LOG_DETAIL,
-                            app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                            app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                            app_template_dir=g_vars.g_cfg['web']['template_dir'],
-                            title=self.GetTitle(),
-                            sessionid=sid, user_lang=ulang,
-                            switchid=temp,
-                            switch_name=row.get('name', ''),
-                            query_btn_label=label_tbl['query'])
-            else:
-                self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
+            if len(temp) == 0:
+                raise cyclone_web.HTTPError(404, 'no switch')
+            row = await api_core.Switch.Get(["select id, name from rgw_switch where id=?", (temp,)])
+            if row is None:
+                raise cyclone_web.HTTPError(404, 'no switch')
+            label_tbl = self.GetLabel()[ulang]
+            self.render(rgw_consts.Node_TPL_NAMES.VIEW_SWITCH_ON_LOG_DETAIL,
+                        app_js_dir=g_vars.g_cfg['web']['js_dir'],
+                        app_css_dir=g_vars.g_cfg['web']['css_dir'],
+                        app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                        title=self.GetTitle(),
+                        sessionid=sid, user_lang=ulang,
+                        switchid=temp,
+                        switch_name=row.get('name', ''),
+                        query_btn_label=label_tbl['query'])
         except rg_lib.RGError as rge:
             if models.ErrorTypes.TypeOfNoRight(rge):
                 self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
@@ -416,10 +395,6 @@ class ViewSwitchOnLogDetail(UIBase):
                 self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
             else:
                 self.finish(rgw_consts.WebContent.SERVER_ERROR)
-        except cyclone_web.HTTPError:
-            raise
-        except Exception:
-            self.finish(rgw_consts.WebContent.SERVER_ERROR)
 
     async def async_get(self):
         return await self.handlePage_()
@@ -460,37 +435,34 @@ class ViewSensorRecentTrend(UIBase):
     async def handlePage_(self):
         try:
             await api_req_limit.CheckMinuteRate("ViewSensorRecentTrend", rg_lib.Cyclone.TryGetRealIp(self), 3)
-            sid = GetToken(self)
+            sid = await CheckRight(self)
             ulang = GetLangCode(self)
             temp_str = self.get_argument('sensorids')
             sensorids = c_escape.json_decode(c_escape.url_unescape(temp_str))
             plotting_no = self.get_argument('plotting_no', '1')
             if len(sensorids) < 1:
                 raise cyclone_web.HTTPError(404, 'no sensor')
-            if sid:
-                await api_auth.CheckRight(sid)
-                sql_str = rg_lib.Sqlite.GenInSql("""select COALESCE(name,'') name, id from rgw_sensor where id in """,
-                                                 sensorids)
-                sensors = await api_core.BizDB.Query([sql_str, sensorids])
-                if len(sensors) > 0:
-                    label_tbl = self.GetLabelTbl()[ulang]
-                    self.render(rgw_consts.Node_TPL_NAMES.VIEW_SENSORS_RECENT_TREND,
-                                app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                                app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                                app_template_dir=g_vars.g_cfg['web']['template_dir'],
-                                title=self.GetTitle(),
-                                sessionid=sid, user_lang=ulang,
-                                sensorids=sensorids,
-                                hours_tbls=self.GetHoursTbls(),
-                                mins_interval_tbls=self.GetMinsInterval(),
-                                hours_label=label_tbl['hours'],
-                                minutes_label=label_tbl['minutes'],
-                                plotting_no=plotting_no,
-                                sensor_recent_hours_plotting_url=rgw_consts.Node_URLs.VIEW_RECENT_HOURS_SENSOR_DATA_PLOTTING[1:])
-                else:
-                    self.finish("no sensor")
+            sql_str = rg_lib.Sqlite.GenInSql("""select COALESCE(name,'') name, id from rgw_sensor where id in """,
+                                             sensorids)
+            sensors = await api_core.BizDB.Query([sql_str, sensorids])
+            if len(sensors) > 0:
+                label_tbl = self.GetLabelTbl()[ulang]
+                self.render(rgw_consts.Node_TPL_NAMES.VIEW_SENSORS_RECENT_TREND,
+                            app_js_dir=g_vars.g_cfg['web']['js_dir'],
+                            app_css_dir=g_vars.g_cfg['web']['css_dir'],
+                            app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                            title=self.GetTitle(),
+                            sessionid=sid, user_lang=ulang,
+                            sensorids=sensorids,
+                            hours_tbls=self.GetHoursTbls(),
+                            mins_interval_tbls=self.GetMinsInterval(),
+                            hours_label=label_tbl['hours'],
+                            minutes_label=label_tbl['minutes'],
+                            plotting_no=plotting_no,
+                            sensor_recent_hours_plotting_url=rgw_consts.Node_URLs.VIEW_RECENT_HOURS_SENSOR_DATA_PLOTTING[
+                                                             1:])
             else:
-                self.redirect(DetectLoginPortal(self))
+                self.finish("no sensor")
         except rg_lib.RGError as rge:
             if models.ErrorTypes.TypeOfNoRight(rge):
                 self.redirect(DetectLoginPortal(self))
@@ -498,11 +470,6 @@ class ViewSensorRecentTrend(UIBase):
                 self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
             else:
                 self.finish(rgw_consts.WebContent.SERVER_ERROR)
-        except cyclone_web.HTTPError:
-            raise
-        except Exception:
-            log.err()
-            self.finish(rgw_consts.WebContent.SERVER_ERROR)
 
     async def async_get(self):
         return await self.handlePage_()
@@ -525,21 +492,17 @@ class ViewMonthlySwitchUsage(UIBase):
     async def handlePage_(self):
         try:
             await api_req_limit.CheckMinuteRate("ViewMonthlySwitchUsage", rg_lib.Cyclone.TryGetRealIp(self), 3)
-            sid = GetToken(self)
+            sid = await CheckRight(self)
             ulang = GetLangCode(self)
-            if sid:
-                await api_auth.CheckRight(sid)
-                label_tbl = self.GetLabel()[ulang]
-                self.render(rgw_consts.Node_TPL_NAMES.VIEW_SWITCH_MONTHLY_USAGE,
-                            app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                            app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                            app_template_dir=g_vars.g_cfg['web']['template_dir'],
-                            title=self.GetTitle(),
-                            sessionid=sid, user_lang=ulang,
-                            switch_on_detail_url=rgw_consts.Node_URLs.VIEW_SWITCH_ON_LOG_DETAIL[1:],
-                            export_label=label_tbl['export'])
-            else:
-                self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
+            label_tbl = self.GetLabel()[ulang]
+            self.render(rgw_consts.Node_TPL_NAMES.VIEW_SWITCH_MONTHLY_USAGE,
+                        app_js_dir=g_vars.g_cfg['web']['js_dir'],
+                        app_css_dir=g_vars.g_cfg['web']['css_dir'],
+                        app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                        title=self.GetTitle(),
+                        sessionid=sid, user_lang=ulang,
+                        switch_on_detail_url=rgw_consts.Node_URLs.VIEW_SWITCH_ON_LOG_DETAIL[1:],
+                        export_label=label_tbl['export'])
         except rg_lib.RGError as rge:
             if models.ErrorTypes.TypeOfNoRight(rge):
                 self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
@@ -547,10 +510,6 @@ class ViewMonthlySwitchUsage(UIBase):
                 self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
             else:
                 self.finish(rgw_consts.WebContent.SERVER_ERROR)
-        except cyclone_web.HTTPError:
-            raise
-        except Exception:
-            self.finish(rgw_consts.WebContent.SERVER_ERROR)
 
     async def async_get(self):
         return await self.handlePage_()
@@ -563,11 +522,11 @@ class AppEm(UIBase):
     def GetLabel(self):
         return {
             "en": {"open": "turn on", "close": "turn off", "open_duration_desc": "15-9999 seconds",
-                    'set_schedule': "set schedule",
-                    'switch_schedule_view': "view schedule",
-                    'set_cond_action_view': 'set action condition',
-                    'switch_on_log_detail_view': "switch monthly usage",
-                    'goto': 'env data'},
+                   'set_schedule': "set schedule",
+                   'switch_schedule_view': "view schedule",
+                   'set_cond_action_view': 'set action condition',
+                   'switch_on_log_detail_view': "switch monthly usage",
+                   'goto': 'env data'},
             "zh-cn": {"open": "打开", "close": "关闭", "open_duration_desc": "15-99999秒",
                       'set_schedule': "设置排程",
                       'switch_schedule_view': "查看排程",
@@ -585,30 +544,26 @@ class AppEm(UIBase):
     async def handlePage_(self):
         try:
             await api_req_limit.CheckMinuteRate("AppEm", rg_lib.Cyclone.TryGetRealIp(self), 3)
-            sid = self.get_cookie(rgw_consts.Cookies.TENANT)
+            sid = await CheckRight(self)
             ulang = GetLangCode(self)
-            if sid:
-                await api_auth.CheckRight(sid)
-                label_tbl = self.GetLabel()[ulang]
-                self.render(rgw_consts.Node_TPL_NAMES.APP_EM,
-                            app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                            app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                            app_template_dir=g_vars.g_cfg['web']['template_dir'],
-                            title=self.GetTitle(),
-                            sessionid=sid, user_lang=ulang, open_valve_label=label_tbl['open'],
-                            close_valve_label=label_tbl['close'],
-                            open_duration_label=label_tbl['open_duration_desc'],
-                            switch_schedule_view_url=rgw_consts.Node_URLs.VIEW_SWITCH_SCHEDULES[1:],
-                            switch_schedule_view_label=label_tbl['switch_schedule_view'],
-                            set_schedule_label=label_tbl['set_schedule'],
-                            set_cond_action_view_label=label_tbl['set_cond_action_view'],
-                            view_monthly_switch_usage_label=label_tbl['switch_on_log_detail_view'],
-                            view_monthly_switch_usage_url=rgw_consts.Node_URLs.VIEW_MONTHLY_SWITCH_USAGE[1:],
-                            set_sensor_trigger_view_url=rgw_consts.Node_URLs.APP_ADM_SENSOR_TRIGGER[1:],
-                            em_sensor_url=rgw_consts.Node_URLs.APP_EM_SENSOR[1:],
-                            goto_label=label_tbl['goto'])
-            else:
-                self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
+            label_tbl = self.GetLabel()[ulang]
+            self.render(rgw_consts.Node_TPL_NAMES.APP_EM,
+                        app_js_dir=g_vars.g_cfg['web']['js_dir'],
+                        app_css_dir=g_vars.g_cfg['web']['css_dir'],
+                        app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                        title=self.GetTitle(),
+                        sessionid=sid, user_lang=ulang, open_valve_label=label_tbl['open'],
+                        close_valve_label=label_tbl['close'],
+                        open_duration_label=label_tbl['open_duration_desc'],
+                        switch_schedule_view_url=rgw_consts.Node_URLs.VIEW_SWITCH_SCHEDULES[1:],
+                        switch_schedule_view_label=label_tbl['switch_schedule_view'],
+                        set_schedule_label=label_tbl['set_schedule'],
+                        set_cond_action_view_label=label_tbl['set_cond_action_view'],
+                        view_monthly_switch_usage_label=label_tbl['switch_on_log_detail_view'],
+                        view_monthly_switch_usage_url=rgw_consts.Node_URLs.VIEW_MONTHLY_SWITCH_USAGE[1:],
+                        set_sensor_trigger_view_url=rgw_consts.Node_URLs.APP_ADM_SENSOR_TRIGGER[1:],
+                        em_sensor_url=rgw_consts.Node_URLs.APP_EM_SENSOR[1:],
+                        goto_label=label_tbl['goto'])
         except rg_lib.RGError as rge:
             if models.ErrorTypes.TypeOfNoRight(rge):
                 self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
@@ -616,9 +571,6 @@ class AppEm(UIBase):
                 self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
             else:
                 self.finish(rgw_consts.WebContent.SERVER_ERROR)
-        except Exception:
-            log.err()
-            self.finish(rgw_consts.WebContent.SERVER_ERROR)
 
     async def async_get(self):
         return await self.handlePage_()
@@ -645,29 +597,26 @@ class AppEmSensor(UIBase):
     async def handlePage_(self):
         try:
             await api_req_limit.CheckMinuteRate("AppEmSensor", rg_lib.Cyclone.TryGetRealIp(self), 3)
-            sid = self.get_cookie(rgw_consts.Cookies.TENANT)
+            sid = await CheckRight(self)
             ulang = GetLangCode(self)
-            if sid:
-                await api_auth.CheckRight(sid)
-                label_tbl = self.GetLabel()[ulang]
-                self.render(rgw_consts.Node_TPL_NAMES.APP_EM_SENSOR,
-                            app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                            app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                            app_template_dir=g_vars.g_cfg['web']['template_dir'],
-                            title=self.GetTitle(),
-                            sessionid=sid, user_lang=ulang,
-                            sensor_mins_avg_trend_url=rgw_consts.Node_URLs.VIEW_SENSOR_MINS_AVG_TREND[1:],
-                            sensor_mins_avg_data_url=rgw_consts.Node_URLs.VIEW_SENSOR_MINS_AVG_DATA[1:],
-                            sensor_recent_hours_plotting_url=rgw_consts.Node_URLs.VIEW_RECENT_HOURS_SENSOR_DATA_PLOTTING[1:],
-                            sensor_recent_trend_url=rgw_consts.Node_URLs.VIEW_SENSORS_RECENT_TREND[1:],
-                            em_url=rgw_consts.Node_URLs.APP_EM[1:],
-                            goto_label=label_tbl['goto'],
-                            plot1_label=label_tbl['plot1'],
-                            plot2_label=label_tbl['plot2'],
-                            history_trend_url_label=label_tbl['history_trend_url'],
-                            history_data_url_label=label_tbl['history_data_url'])
-            else:
-                self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
+            label_tbl = self.GetLabel()[ulang]
+            self.render(rgw_consts.Node_TPL_NAMES.APP_EM_SENSOR,
+                        app_js_dir=g_vars.g_cfg['web']['js_dir'],
+                        app_css_dir=g_vars.g_cfg['web']['css_dir'],
+                        app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                        title=self.GetTitle(),
+                        sessionid=sid, user_lang=ulang,
+                        sensor_mins_avg_trend_url=rgw_consts.Node_URLs.VIEW_SENSOR_MINS_AVG_TREND[1:],
+                        sensor_mins_avg_data_url=rgw_consts.Node_URLs.VIEW_SENSOR_MINS_AVG_DATA[1:],
+                        sensor_recent_hours_plotting_url=rgw_consts.Node_URLs.VIEW_RECENT_HOURS_SENSOR_DATA_PLOTTING[
+                                                         1:],
+                        sensor_recent_trend_url=rgw_consts.Node_URLs.VIEW_SENSORS_RECENT_TREND[1:],
+                        em_url=rgw_consts.Node_URLs.APP_EM[1:],
+                        goto_label=label_tbl['goto'],
+                        plot1_label=label_tbl['plot1'],
+                        plot2_label=label_tbl['plot2'],
+                        history_trend_url_label=label_tbl['history_trend_url'],
+                        history_data_url_label=label_tbl['history_data_url'])
         except rg_lib.RGError as rge:
             if models.ErrorTypes.TypeOfNoRight(rge):
                 self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
@@ -675,8 +624,6 @@ class AppEmSensor(UIBase):
                 self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
             else:
                 self.finish(rgw_consts.WebContent.SERVER_ERROR)
-        except Exception:
-            self.finish(rgw_consts.WebContent.SERVER_ERROR)
 
     async def async_get(self):
         return await self.handlePage_()
@@ -685,23 +632,19 @@ class AppEmSensor(UIBase):
 class AppSysCfg(UIBase):
     def GetTimezoneOpts(self):
         import pytz
-        asia_tzs = ['UTC']+[i for i in pytz.common_timezones if i.find('Asia') >= 0]
+        asia_tzs = ['UTC'] + [i for i in pytz.common_timezones if i.find('Asia') >= 0]
         return [{'label': i, 'value': i} for i in asia_tzs]
 
     async def async_get(self):
         try:
             await api_req_limit.CheckMinuteRate("AppSysCfg", rg_lib.Cyclone.TryGetRealIp(self), 3)
-            sid = self.get_cookie(rgw_consts.Cookies.TENANT)
-            if sid:
-                await api_auth.CheckRight(sid)
-                self.render(rgw_consts.Node_TPL_NAMES.APP_SYS_CFG,
-                            app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                            app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                            app_template_dir=g_vars.g_cfg['web']['template_dir'],
-                            tz_options=self.GetTimezoneOpts(),
-                            title="Sys Config", sessionid=sid)
-            else:
-                self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
+            sid = await CheckRight(self)
+            self.render(rgw_consts.Node_TPL_NAMES.APP_SYS_CFG,
+                        app_js_dir=g_vars.g_cfg['web']['js_dir'],
+                        app_css_dir=g_vars.g_cfg['web']['css_dir'],
+                        app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                        tz_options=self.GetTimezoneOpts(),
+                        title="Sys Config", sessionid=sid)
         except rg_lib.RGError as err:
             if models.ErrorTypes.TypeOfAccessOverLimit(err):
                 self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
@@ -714,7 +657,7 @@ class AppSysCfg(UIBase):
 class AppSysCfgMobile(UIBase):
     def GetTimezoneOpts(self):
         import pytz
-        asia_tzs = ['UTC']+[i for i in pytz.common_timezones if i.find('Asia') >= 0]
+        asia_tzs = ['UTC'] + [i for i in pytz.common_timezones if i.find('Asia') >= 0]
         return [{'label': i, 'value': i} for i in asia_tzs]
 
     def GetLabel(self):
@@ -750,28 +693,24 @@ class AppSysCfgMobile(UIBase):
     async def async_get(self):
         try:
             await api_req_limit.CheckMinuteRate("AppSysCfgMobile", rg_lib.Cyclone.TryGetRealIp(self), 3)
-            sid = self.get_argument('token', '')
+            sid = await CheckRight(self)
             ulang = GetLangCode(self)
-            if sid:
-                await api_auth.CheckRight(sid)
-                label_tbl = self.GetLabel()[ulang]
-                self.render(rgw_consts.Node_TPL_NAMES.APP_SYS_CFG_MOBILE,
-                            app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                            app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                            app_template_dir=g_vars.g_cfg['web']['template_dir'],
-                            tz_options=self.GetTimezoneOpts(),
-                            title="Sys Config", sessionid=sid,
-                            register=label_tbl['register'],
-                            sync=label_tbl['sync'],
-                            save=label_tbl['save'],
-                            restart=label_tbl['restart'],
-                            reboot=label_tbl['reboot'],
-                            timezone=label_tbl['timezone'],
-                            password=label_tbl['password'],
-                            email_sender=label_tbl['email_sender'],
-                            user_lang=ulang)
-            else:
-                raise cyclone_web.HTTPError(403)
+            label_tbl = self.GetLabel()[ulang]
+            self.render(rgw_consts.Node_TPL_NAMES.APP_SYS_CFG_MOBILE,
+                        app_js_dir=g_vars.g_cfg['web']['js_dir'],
+                        app_css_dir=g_vars.g_cfg['web']['css_dir'],
+                        app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                        tz_options=self.GetTimezoneOpts(),
+                        title="Sys Config", sessionid=sid,
+                        register=label_tbl['register'],
+                        sync=label_tbl['sync'],
+                        save=label_tbl['save'],
+                        restart=label_tbl['restart'],
+                        reboot=label_tbl['reboot'],
+                        timezone=label_tbl['timezone'],
+                        password=label_tbl['password'],
+                        email_sender=label_tbl['email_sender'],
+                        user_lang=ulang)
         except rg_lib.RGError as err:
             if models.ErrorTypes.TypeOfAccessOverLimit(err):
                 self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
@@ -791,31 +730,27 @@ class AppEditSensor(UIBase):
     async def async_get(self):
         try:
             await api_req_limit.CheckMinuteRate("AppEditSensor", rg_lib.Cyclone.TryGetRealIp(self), 3)
-            sid = self.get_cookie(rgw_consts.Cookies.TENANT)
-            if sid:
-                await api_auth.CheckRight(sid)
-                edit_mode = self.get_argument("edit_mode")
-                if edit_mode == "edit":
-                    rowid = self.get_argument("id")
-                    self.render(rgw_consts.Node_TPL_NAMES.APP_EDIT_SENSOR,
-                                app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                                app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                                app_template_dir=g_vars.g_cfg['web']['template_dir'],
-                                title="Edit Sensor", sessionid=sid,
-                                id=rowid, edit_mode=edit_mode,
-                                data_no_tbls=self.GetDataNoTbls(),
-                                iconid_tbls=self.GetIconTbls())
-                else:
-                    self.render(rgw_consts.Node_TPL_NAMES.APP_EDIT_SENSOR,
-                                app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                                app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                                app_template_dir=g_vars.g_cfg['web']['template_dir'],
-                                title="Add Sensor", sessionid=sid,
-                                id=0, edit_mode=edit_mode,
-                                data_no_tbls=self.GetDataNoTbls(),
-                                iconid_tbls=self.GetIconTbls())
+            sid = await CheckRight(self)
+            edit_mode = self.get_argument("edit_mode")
+            if edit_mode == "edit":
+                rowid = self.get_argument("id")
+                self.render(rgw_consts.Node_TPL_NAMES.APP_EDIT_SENSOR,
+                            app_js_dir=g_vars.g_cfg['web']['js_dir'],
+                            app_css_dir=g_vars.g_cfg['web']['css_dir'],
+                            app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                            title="Edit Sensor", sessionid=sid,
+                            id=rowid, edit_mode=edit_mode,
+                            data_no_tbls=self.GetDataNoTbls(),
+                            iconid_tbls=self.GetIconTbls())
             else:
-                self.finish("please login")
+                self.render(rgw_consts.Node_TPL_NAMES.APP_EDIT_SENSOR,
+                            app_js_dir=g_vars.g_cfg['web']['js_dir'],
+                            app_css_dir=g_vars.g_cfg['web']['css_dir'],
+                            app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                            title="Add Sensor", sessionid=sid,
+                            id=0, edit_mode=edit_mode,
+                            data_no_tbls=self.GetDataNoTbls(),
+                            iconid_tbls=self.GetIconTbls())
         except rg_lib.RGError as err:
             if models.ErrorTypes.TypeOfAccessOverLimit(err):
                 self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
@@ -832,17 +767,13 @@ class AppSensorAdm(UIBase):
     async def async_get(self):
         try:
             await api_req_limit.CheckMinuteRate("AppSensorAdm", rg_lib.Cyclone.TryGetRealIp(self), 3)
-            sid = self.get_cookie(rgw_consts.Cookies.TENANT)
-            if sid:
-                await api_auth.CheckRight(sid)
-                self.render(rgw_consts.Node_TPL_NAMES.APP_ADM_SENSOR,
-                            app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                            app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                            app_template_dir=g_vars.g_cfg['web']['template_dir'],
-                            title=self.GetTitle(), sessionid=sid,
-                            edit_url=rgw_consts.Node_URLs.APP_EDIT_SENSOR[1:])
-            else:
-                self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
+            sid = await CheckRight(self)
+            self.render(rgw_consts.Node_TPL_NAMES.APP_ADM_SENSOR,
+                        app_js_dir=g_vars.g_cfg['web']['js_dir'],
+                        app_css_dir=g_vars.g_cfg['web']['css_dir'],
+                        app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                        title=self.GetTitle(), sessionid=sid,
+                        edit_url=rgw_consts.Node_URLs.APP_EDIT_SENSOR[1:])
         except rg_lib.RGError as err:
             if models.ErrorTypes.TypeOfAccessOverLimit(err):
                 self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
@@ -859,31 +790,27 @@ class AppEditSwitch(UIBase):
     async def async_get(self):
         try:
             await api_req_limit.CheckMinuteRate("AppEditSwitch", rg_lib.Cyclone.TryGetRealIp(self), 3)
-            sid = self.get_cookie(rgw_consts.Cookies.TENANT)
-            if sid:
-                await api_auth.CheckRight(sid)
-                edit_mode = self.get_argument("edit_mode")
-                if edit_mode == "edit":
-                    rowid = self.get_argument("id")
-                    self.render(rgw_consts.Node_TPL_NAMES.APP_EDIT_SWITCH,
-                                app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                                app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                                app_template_dir=g_vars.g_cfg['web']['template_dir'],
-                                title="Edit Switch", sessionid=sid,
-                                id=rowid,
-                                edit_mode=edit_mode,
-                                iconid_tbls=self.GetIconTbls())
-                else:
-                    self.render(rgw_consts.Node_TPL_NAMES.APP_EDIT_SWITCH,
-                                app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                                app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                                app_template_dir=g_vars.g_cfg['web']['template_dir'],
-                                title="Add Switch", sessionid=sid,
-                                id='',
-                                edit_mode=edit_mode,
-                                iconid_tbls=self.GetIconTbls())
+            sid = await CheckRight(self)
+            edit_mode = self.get_argument("edit_mode")
+            if edit_mode == "edit":
+                rowid = self.get_argument("id")
+                self.render(rgw_consts.Node_TPL_NAMES.APP_EDIT_SWITCH,
+                            app_js_dir=g_vars.g_cfg['web']['js_dir'],
+                            app_css_dir=g_vars.g_cfg['web']['css_dir'],
+                            app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                            title="Edit Switch", sessionid=sid,
+                            id=rowid,
+                            edit_mode=edit_mode,
+                            iconid_tbls=self.GetIconTbls())
             else:
-                self.finish("please login")
+                self.render(rgw_consts.Node_TPL_NAMES.APP_EDIT_SWITCH,
+                            app_js_dir=g_vars.g_cfg['web']['js_dir'],
+                            app_css_dir=g_vars.g_cfg['web']['css_dir'],
+                            app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                            title="Add Switch", sessionid=sid,
+                            id='',
+                            edit_mode=edit_mode,
+                            iconid_tbls=self.GetIconTbls())
         except rg_lib.RGError as err:
             if models.ErrorTypes.TypeOfAccessOverLimit(err):
                 self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
@@ -900,17 +827,13 @@ class AppSwitchAdm(UIBase):
     async def async_get(self):
         try:
             await api_req_limit.CheckMinuteRate("AppSwitchAdm", rg_lib.Cyclone.TryGetRealIp(self), 3)
-            sid = self.get_cookie(rgw_consts.Cookies.TENANT)
-            if sid:
-                await api_auth.CheckRight(sid)
-                self.render(rgw_consts.Node_TPL_NAMES.APP_ADM_SWITCH,
-                            app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                            app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                            app_template_dir=g_vars.g_cfg['web']['template_dir'],
-                            title=self.GetTitle(), sessionid=sid,
-                            edit_url=rgw_consts.Node_URLs.APP_EDIT_SWITCH[1:])
-            else:
-                self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
+            sid = await CheckRight(self)
+            self.render(rgw_consts.Node_TPL_NAMES.APP_ADM_SWITCH,
+                        app_js_dir=g_vars.g_cfg['web']['js_dir'],
+                        app_css_dir=g_vars.g_cfg['web']['css_dir'],
+                        app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                        title=self.GetTitle(), sessionid=sid,
+                        edit_url=rgw_consts.Node_URLs.APP_EDIT_SWITCH[1:])
         except rg_lib.RGError as err:
             if models.ErrorTypes.TypeOfAccessOverLimit(err):
                 self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
@@ -920,23 +843,56 @@ class AppSwitchAdm(UIBase):
                 self.finish(rgw_consts.WebContent.SERVER_ERROR)
 
 
+class AppZbModuleAdm(UIBase):
+    def GetTitle(self):
+        return "Zigbee Module Adm powered by RoundGIS Lab"
+
+    async def async_get(self):
+        await api_req_limit.CheckMinuteRate("AppSwitchAdm", rg_lib.Cyclone.TryGetRealIp(self), 3)
+        sid = await CheckRight(self)
+        self.render(rgw_consts.Node_TPL_NAMES.APP_ADM_ZB_MODULE,
+                    app_js_dir=g_vars.g_cfg['web']['js_dir'],
+                    app_css_dir=g_vars.g_cfg['web']['css_dir'],
+                    app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                    title=self.GetTitle(),
+                    sync_zb_dev_url=rgw_consts.Node_URLs.APP_SYNC_ZB_DEVICE[1:],
+                    restore_module_url=rgw_consts.Node_URLs.APP_RESTORE_ZB_MODULE[1:],
+                    sessionid=sid)
+
+
+class AppRestoreZbModule(UIBase):
+    def GetTitle(self):
+        return "Restore Zigbee Module powered by RoundGIS Lab"
+
+    async def async_get(self):
+        sid = await CheckRight(self)
+        moduleid = self.get_argument("moduleid")
+        self.render(rgw_consts.Node_TPL_NAMES.APP_RESTORE_ZB_MODULE,
+                    app_js_dir=g_vars.g_cfg['web']['js_dir'],
+                    app_css_dir=g_vars.g_cfg['web']['css_dir'],
+                    app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                    title=self.GetTitle(),
+                    target_moduleid=moduleid,
+                    sessionid=sid)
+
+
 class AppEditSensorTrigger(UIBase):
     def GetLabelTbl(self):
         return {
             "en": {"sensor": "sensor", "switch": "switch",
-                    'start_time': 'start', 'stop_time': 'stop',
-                    'update_btn': 'update',
-                    'remove_btn': 'remove',
-                    'save_btn': 'save',
-                    'check_interval': 'check interval(minute)',
+                   'start_time': 'start', 'stop_time': 'stop',
+                   'update_btn': 'update',
+                   'remove_btn': 'remove',
+                   'save_btn': 'save',
+                   'check_interval': 'check interval(minute)',
                    'name': 'name'},
 
             "zh-cn": {"sensor": "传感器", "switch": "开关",
-                    'start_time': '开始', 'stop_time': '结束',
-                    'update_btn': '更新',
-                    'remove_btn': '移除',
-                    'save_btn': '保存',
-                    'check_interval': '探测范围(XX分钟)',
+                      'start_time': '开始', 'stop_time': '结束',
+                      'update_btn': '更新',
+                      'remove_btn': '移除',
+                      'save_btn': '保存',
+                      'check_interval': '探测范围(XX分钟)',
                       'name': '名字'},
 
             "zh-tw": {"sensor": "傳感器", "switch": "開關",
@@ -969,35 +925,31 @@ class AppEditSensorTrigger(UIBase):
     async def async_get(self):
         try:
             await api_req_limit.CheckMinuteRate("AppEditSwitchActionTrigger", rg_lib.Cyclone.TryGetRealIp(self), 3)
-            sid = GetToken(self)
+            sid = await CheckRight(self)
             ulang = GetLangCode(self)
             trigid = self.get_argument('triggerid', "0")
-            if sid:
-                await api_auth.CheckRight(sid)
-                sensor_tbls = await self.GetSensorTbls()
-                switch_tbls = await self.GetSwitchTbls()
-                label_tbl = self.GetLabelTbl()[ulang]
-                self.render(rgw_consts.Node_TPL_NAMES.APP_EDIT_SENSOR_TRIGGER,
-                            app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                            app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                            app_template_dir=g_vars.g_cfg['web']['template_dir'],
-                            title="Set Trigger", sessionid=sid,
-                            sensor_tbls=sensor_tbls,
-                            switch_tbls=switch_tbls,
-                            check_interval_tbls=self.GetCheckIntervalTbls(),
-                            sensor_label=label_tbl['sensor'],
-                            switch_label=label_tbl['switch'],
-                            check_interval_label=label_tbl['check_interval'],
-                            start_time_label=label_tbl['start_time'],
-                            stop_time_label=label_tbl['stop_time'],
-                            name_label=label_tbl['name'],
-                            update_btn=label_tbl['update_btn'],
-                            remove_btn=label_tbl['remove_btn'],
-                            save_btn=label_tbl['save_btn'],
-                            triggerid=trigid,
-                            user_lang=ulang)
-            else:
-                self.finish("please login")
+            sensor_tbls = await self.GetSensorTbls()
+            switch_tbls = await self.GetSwitchTbls()
+            label_tbl = self.GetLabelTbl()[ulang]
+            self.render(rgw_consts.Node_TPL_NAMES.APP_EDIT_SENSOR_TRIGGER,
+                        app_js_dir=g_vars.g_cfg['web']['js_dir'],
+                        app_css_dir=g_vars.g_cfg['web']['css_dir'],
+                        app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                        title="Set Trigger", sessionid=sid,
+                        sensor_tbls=sensor_tbls,
+                        switch_tbls=switch_tbls,
+                        check_interval_tbls=self.GetCheckIntervalTbls(),
+                        sensor_label=label_tbl['sensor'],
+                        switch_label=label_tbl['switch'],
+                        check_interval_label=label_tbl['check_interval'],
+                        start_time_label=label_tbl['start_time'],
+                        stop_time_label=label_tbl['stop_time'],
+                        name_label=label_tbl['name'],
+                        update_btn=label_tbl['update_btn'],
+                        remove_btn=label_tbl['remove_btn'],
+                        save_btn=label_tbl['save_btn'],
+                        triggerid=trigid,
+                        user_lang=ulang)
         except rg_lib.RGError as err:
             if models.ErrorTypes.TypeOfAccessOverLimit(err):
                 self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
@@ -1005,8 +957,6 @@ class AppEditSensorTrigger(UIBase):
                 self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
             else:
                 self.finish(rgw_consts.WebContent.SERVER_ERROR)
-        except cyclone_web.HTTPError:
-            raise
 
 
 class AppAdmSensorTrigger(UIBase):
@@ -1023,25 +973,20 @@ class AppAdmSensorTrigger(UIBase):
     async def async_get(self):
         try:
             await api_req_limit.CheckMinuteRate("AppAdmSwitchActionTrigger", rg_lib.Cyclone.TryGetRealIp(self), 3)
-            sid = GetToken(self)
+            sid = await CheckRight(self)
             ulang = GetLangCode(self)
             label_tbl = self.GetLabel()
-            if sid:
-                await api_auth.CheckRight(sid)
-                self.render(rgw_consts.Node_TPL_NAMES.APP_ADM_SENSOR_TRIGGER,
-                            app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                            app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                            app_template_dir=g_vars.g_cfg['web']['template_dir'],
-                            title=self.GetTitle(), sessionid=sid,
-                            user_lang=ulang,
-                            refresh_label=label_tbl[ulang]['refresh'],
-                            add_label=label_tbl[ulang]['add'],
-                            edit_label=label_tbl[ulang]['edit'],
-                            remove_label=label_tbl[ulang]['remove'],
-                            edit_action_url=rgw_consts.Node_URLs.APP_EDIT_SENSOR_TRIGGER[1:])
-            else:
-                login_url = DetectLoginPortal(self)
-                self.redirect(login_url)
+            self.render(rgw_consts.Node_TPL_NAMES.APP_ADM_SENSOR_TRIGGER,
+                        app_js_dir=g_vars.g_cfg['web']['js_dir'],
+                        app_css_dir=g_vars.g_cfg['web']['css_dir'],
+                        app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                        title=self.GetTitle(), sessionid=sid,
+                        user_lang=ulang,
+                        refresh_label=label_tbl[ulang]['refresh'],
+                        add_label=label_tbl[ulang]['add'],
+                        edit_label=label_tbl[ulang]['edit'],
+                        remove_label=label_tbl[ulang]['remove'],
+                        edit_action_url=rgw_consts.Node_URLs.APP_EDIT_SENSOR_TRIGGER[1:])
         except rg_lib.RGError as err:
             if models.ErrorTypes.TypeOfAccessOverLimit(err):
                 self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
@@ -1049,8 +994,6 @@ class AppAdmSensorTrigger(UIBase):
                 self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
             else:
                 self.finish(rgw_consts.WebContent.SERVER_ERROR)
-        except cyclone_web.HTTPError:
-            raise
 
 
 class Logout(UIBase):

@@ -42,6 +42,10 @@ class JsHandler(AbstractHandler):
 
             'sensor_trigger_rpc.js': {
                 'url': rgw_consts.Node_URLs.API_SENSOR_TRIGGER
+            },
+
+            'zb_module_rpc.js': {
+                'url': rgw_consts.Node_URLs.API_ZB_MODULE_ADM
             }
         }
 

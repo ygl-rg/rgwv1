@@ -28,7 +28,8 @@ def GetApi():
             (rgw_consts.Node_URLs.API_SENSOR_ADM, api_handlers.SensorAdm),
             (rgw_consts.Node_URLs.API_SENSOR_TRIGGER, api_handlers.SensorTriggerAdm),
             (rgw_consts.Node_URLs.API_SWITCH_ADM, api_handlers.SwitchAdm),
-            (rgw_consts.Node_URLs.API_EM, api_handlers.EnvMonitor)
+            (rgw_consts.Node_URLs.API_EM, api_handlers.EnvMonitor),
+            (rgw_consts.Node_URLs.API_ZB_MODULE_ADM, api_handlers.ZbModuleAdm)
             ]
 
 
@@ -44,6 +45,8 @@ def GetAPP():
         (rgw_consts.Node_URLs.APP_ADM_SENSOR_TRIGGER, ui_handlers.AppAdmSensorTrigger),
         (rgw_consts.Node_URLs.APP_ADM_SWITCH, ui_handlers.AppSwitchAdm),
         (rgw_consts.Node_URLs.APP_EDIT_SWITCH, ui_handlers.AppEditSwitch),
+        (rgw_consts.Node_URLs.APP_ADM_ZB_MODULE, ui_handlers.AppZbModuleAdm),
+        (rgw_consts.Node_URLs.APP_RESTORE_ZB_MODULE, ui_handlers.AppRestoreZbModule),
         (rgw_consts.Node_URLs.APP_EM_LOGIN, ui_handlers.EmLogin),
         (rgw_consts.Node_URLs.APP_EM, ui_handlers.AppEm),
         (rgw_consts.Node_URLs.APP_EM_SENSOR, ui_handlers.AppEmSensor)

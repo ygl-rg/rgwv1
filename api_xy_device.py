@@ -131,10 +131,10 @@ def GenCO2(sensors, devices):
 
 
 async def ProbeAndSync():
-    modules = await api_rxg.ListModule('active')
+    modules = await api_rxg.ZbModule.ListModule('active')
     devs = []
     for module in modules:
-        result = await api_rxg.ProbeDevice(module['id'])
+        result = await api_rxg.ZbModule.ProbeDevice(module['id'])
         log.msg(result)
         if len(result['devices']) > 0:
             await SyncSensor()

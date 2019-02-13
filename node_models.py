@@ -177,8 +177,7 @@ class SwitchSchedule:
     @classmethod
     def BeforeSet(cls, schedule_mdl):
         cls.UpdateTsRange(schedule_mdl)
-        rg_lib.Dict.DelKeys(schedule_mdl, 'next_run_ts')
-        return schedule_mdl
+        return rg_lib.Dict.DelKeys(schedule_mdl, 'next_run_ts')
 
     @classmethod
     def PartialUpdate(cls, mdl, excludes):
@@ -454,7 +453,7 @@ class SwitchOpDuration:
 
 class SysCfg:
     KEYS = ['timezone', 'pagekite_path', 'pagekite_frontend', 'domain', 'pagekite_pwd',
-            'pwd', 'gw_url', 'gw_pwd', 'email_sender',
+            'pwd', 'gw_url', 'email_sender',
             'elasticemail_api_key', 'elasticemail_send_url']
 
     TBL = "rgw_sys_cfg"
