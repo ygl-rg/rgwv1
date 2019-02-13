@@ -11,7 +11,7 @@ async def Req(rpc_no, method, params, timeout):
            'method': method,
            'params': params}
     try:
-        url, pwd = await api_core.SysCfg.GetGwApiUrl(rpc_no)
+        url = await api_core.SysCfg.GetGwApiUrl(rpc_no)
         if url:
             resp_defer = await treq.post(url, data=json.dumps(tbl).encode('utf-8'), timeout=timeout)
             res = await resp_defer.json()
