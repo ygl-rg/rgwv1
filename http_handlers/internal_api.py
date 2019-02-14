@@ -5,6 +5,7 @@ from . import sys_cfg_api
 from http_handlers import sensor_api, switch_api, \
     sensor_trigger_api as cond_api
 from . import zb_module_api
+from . import zb_device_api
 
 
 class Base(rg_lib.AsyncDynFuncHandler):
@@ -81,3 +82,18 @@ class ZbModuleAdm(Base):
                          'RestoreModule': functools.partial(zb_module_api.RestoreModule, self),
                          'RebootModule': functools.partial(zb_module_api.RebootModule, self),
                          'RebootAll': functools.partial(zb_module_api.RebootAll, self)}
+
+
+class ZbDeviceAdm(Base):
+    def initialize(self, **kwargs):
+        self.FUNC_TBL = {"AddDevice": functools.partial(zb_device_api.Add, self),
+                         "SetDevice": functools.partial(zb_device_api.Set, self),
+                         "GetDevice": functools.partial(zb_device_api.Get, self),
+                         "GetDeviceNId": functools.partial(zb_device_api.GetNId, self),
+                         'RemoveDevice': functools.partial(zb_device_api.Remove, self),
+                         'ResetDevice': functools.partial(zb_device_api.Reset, self),
+                         'SearchDevice': functools.partial(zb_device_api.Search, self),
+                         'GetDeviceOpLog': functools.partial(zb_device_api.GetOpLog, self),
+                         'GetDeviceOpErrorCount': functools.partial(zb_device_api.GetOpErrorCount, self),
+                         'RebootDevice': functools.partial(zb_device_api.Reboot, self)
+                         }

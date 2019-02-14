@@ -46,7 +46,7 @@ async def CheckUser2(pwd):
     if flag:
         return pwd
     else:
-        raise rg_lib.RGError(models.ErrorTypes.NoRight())
+        raise models.NoRightError('no right')
 
 
 async def CheckRight(token):
@@ -57,4 +57,4 @@ async def CheckRight(token):
         else:
             return await CheckUser2(token)
     else:
-        raise rg_lib.RGError(models.ErrorTypes.NoRight())
+        raise models.NoRightError('no right')

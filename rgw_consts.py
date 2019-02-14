@@ -68,6 +68,8 @@ class XY_DeviceNo:
     XY_LIQUID_LEVEL_SENSOR = 'XY_LIQUID_LEVEL_SENSOR'
     XY_SOIL_3IN1_SENSOR = 'XY_SOIL_3IN1_SENSOR'
     XY_CO2_SENSOR = 'XY_CO2_SENSOR'
+    LIST = [XY_SWITCH, XY_TEMP_HUMIDITY_SENSOR, XY_ILLUMINATION_SENSOR,
+            XY_LIQUID_LEVEL_SENSOR, XY_SOIL_3IN1_SENSOR, XY_CO2_SENSOR]
 
 
 class Node_URLs:
@@ -95,12 +97,18 @@ class Node_URLs:
     APP_ADM_ZB_MODULE = r"adm/zbmodule"
     APP_RESTORE_ZB_MODULE = r"adm/zbmodule/restore"
     APP_SYNC_ZB_DEVICE = r'adm/zbdevice/sync'
+    APP_EDIT_ZB_DEVICE = r"edit/zbdevice"
+    APP_ADM_ZB_DEVICE = r"adm/zbdevice"
+    APP_DEVICE_OP_LOG = r'log/zbdevice/op'
+    APP_DEVICE_OP_ERROR_COUNT = r'log/zbdevice/op/errorcount'
+    APP_RECAP_ZB_DEVICE = r'adm/zbdevice/recap'
     API_EM = r"api/em"
     API_SYS_CFG = r'api/syscfg'
     API_SENSOR_ADM = r'api/sensoradm'
     API_SENSOR_TRIGGER = r"api/sensortrigger"
     API_SWITCH_ADM = r'api/switchadm'
     API_ZB_MODULE_ADM = r'api/zbmoduleadm'
+    API_ZB_DEVICE_ADM = r'api/zbdeviceadm'
     EXPORT_FMT = "export/{0}"
 
 
@@ -129,6 +137,12 @@ class Node_TPL_NAMES:
     APP_ADM_SWITCH = r'app_adm_switch_tpl.html'
     APP_ADM_ZB_MODULE = r'app_adm_zb_module_tpl.html'
     APP_RESTORE_ZB_MODULE = r'app_restore_zb_module_tpl.html'
+    APP_EDIT_ZB_DEVICE = r'app_edit_zb_device_tpl.html'
+    APP_ADM_ZB_DEVICE = r'app_adm_zb_device_tpl.html'
+    APP_SYNC_ZB_DEVICE = r'app_sync_zb_device_tpl.html'
+    APP_DEVICE_OP_LOG = r'app_device_op_log_tpl.html'
+    APP_DEVICE_OP_ERROR_COUNT = r'app_device_op_error_count_tpl.html'
+    APP_RECAP_ZB_DEVICE = r'app_recap_zb_device_tpl.html'
 
 
 class Keys:

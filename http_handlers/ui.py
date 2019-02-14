@@ -83,7 +83,7 @@ class AppAdmLogin(UIBase):
     async def async_get(self):
         try:
             await api_req_limit.CheckMinuteRate("AppAdmLogin", rg_lib.Cyclone.TryGetRealIp(self), 5)
-            user_lang = self.get_cookie(rgw_consts.Cookies.USER_LANG, "eng")
+            user_lang = GetLangCode(self)
             self.RenderPage(user_lang, '')
         except rg_lib.RGError as err:
             if models.ErrorTypes.TypeOfAccessOverLimit(err):
@@ -95,7 +95,7 @@ class AppAdmLogin(UIBase):
         await api_req_limit.CheckMinuteRate("adm_login", rg_lib.Cyclone.TryGetRealIp(self), 5)
         pwd = self.get_argument('pwd', '').strip()
         adm_type = self.get_argument('adm_type', 'switch')
-        user_lang = self.get_cookie(rgw_consts.Cookies.USER_LANG, "eng")
+        user_lang = GetLangCode(self)
         if pwd:
             try:
                 sessionid, expire_at, curr = await api_auth.Adm(pwd)
@@ -106,7 +106,7 @@ class AppAdmLogin(UIBase):
                 else:
                     raise ValueError("adm type incorrect")
             except rg_lib.RGError as rge:
-                if models.ErrorTypes.TypeOfNoRight(rge.message):
+                if models.ErrorTypes.TypeOfNoRight(rge):
                     self.RenderPage(user_lang, "no right")
                 elif models.ErrorTypes.TypeOfPwdErr(rge):
                     self.RenderPage(user_lang, 'password error')
@@ -848,16 +848,19 @@ class AppZbModuleAdm(UIBase):
         return "Zigbee Module Adm powered by RoundGIS Lab"
 
     async def async_get(self):
-        await api_req_limit.CheckMinuteRate("AppSwitchAdm", rg_lib.Cyclone.TryGetRealIp(self), 3)
-        sid = await CheckRight(self)
-        self.render(rgw_consts.Node_TPL_NAMES.APP_ADM_ZB_MODULE,
-                    app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                    app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                    app_template_dir=g_vars.g_cfg['web']['template_dir'],
-                    title=self.GetTitle(),
-                    sync_zb_dev_url=rgw_consts.Node_URLs.APP_SYNC_ZB_DEVICE[1:],
-                    restore_module_url=rgw_consts.Node_URLs.APP_RESTORE_ZB_MODULE[1:],
-                    sessionid=sid)
+        try:
+            await api_req_limit.CheckMinuteRate("AppZbModuleAdm", rg_lib.Cyclone.TryGetRealIp(self), 3)
+            sid = await CheckRight(self)
+            self.render(rgw_consts.Node_TPL_NAMES.APP_ADM_ZB_MODULE,
+                        app_js_dir=g_vars.g_cfg['web']['js_dir'],
+                        app_css_dir=g_vars.g_cfg['web']['css_dir'],
+                        app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                        title=self.GetTitle(),
+                        sync_zb_dev_url=rgw_consts.Node_URLs.APP_SYNC_ZB_DEVICE[1:],
+                        restore_module_url=rgw_consts.Node_URLs.APP_RESTORE_ZB_MODULE[1:],
+                        sessionid=sid)
+        except models.NoRightError:
+            self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
 
 
 class AppRestoreZbModule(UIBase):
@@ -865,15 +868,141 @@ class AppRestoreZbModule(UIBase):
         return "Restore Zigbee Module powered by RoundGIS Lab"
 
     async def async_get(self):
-        sid = await CheckRight(self)
-        moduleid = self.get_argument("moduleid")
-        self.render(rgw_consts.Node_TPL_NAMES.APP_RESTORE_ZB_MODULE,
-                    app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                    app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                    app_template_dir=g_vars.g_cfg['web']['template_dir'],
-                    title=self.GetTitle(),
-                    target_moduleid=moduleid,
-                    sessionid=sid)
+        try:
+            sid = await CheckRight(self)
+            moduleid = self.get_argument("moduleid")
+            self.render(rgw_consts.Node_TPL_NAMES.APP_RESTORE_ZB_MODULE,
+                        app_js_dir=g_vars.g_cfg['web']['js_dir'],
+                        app_css_dir=g_vars.g_cfg['web']['css_dir'],
+                        app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                        title=self.GetTitle(),
+                        target_moduleid=moduleid,
+                        sessionid=sid)
+        except models.NoRightError:
+            self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
+
+
+class AppEditZbDevice(UIBase):
+    def GetDeviceNoTbls(self):
+        return [{'label': i, 'value': i} for i in rgw_consts.XY_DeviceNo.LIST]
+
+    async def async_get(self):
+        try:
+            await api_req_limit.CheckMinuteRate("AppEditZbDevice", rg_lib.Cyclone.TryGetRealIp(self), 3)
+            sid = await CheckRight(self)
+            edit_mode = self.get_argument("edit_mode")
+            if edit_mode == "edit":
+                deviceid = self.get_argument("deviceid")
+                self.render(rgw_consts.Node_TPL_NAMES.APP_EDIT_ZB_DEVICE,
+                            app_js_dir=g_vars.g_cfg['web']['js_dir'],
+                            app_css_dir=g_vars.g_cfg['web']['css_dir'],
+                            app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                            title="Edit Zigbee Device",
+                            edit_mode=edit_mode, deviceid=deviceid,
+                            device_no_tbls=self.GetDeviceNoTbls(),
+                            sessionid=sid)
+            else:
+                raise cyclone_web.HTTPError(404, "zigbee device edit mode incorrect")
+        except models.NoRightError:
+            self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
+
+
+class AppZbDeviceAdm(UIBase):
+    def GetTitle(self):
+        return "Zigbee Device Adm powered by RoundGIS Lab"
+
+    async def async_get(self):
+        try:
+            await api_req_limit.CheckHTTP(self)
+            sid = await CheckRight(self)
+            self.render(rgw_consts.Node_TPL_NAMES.APP_ADM_ZB_DEVICE,
+                        app_js_dir=g_vars.g_cfg['web']['js_dir'],
+                        app_css_dir=g_vars.g_cfg['web']['css_dir'],
+                        app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                        title=self.GetTitle(),
+                        edit_zb_dev_url=rgw_consts.Node_URLs.APP_EDIT_ZB_DEVICE[1:],
+                        recap_zb_dev_url=rgw_consts.Node_URLs.APP_RECAP_ZB_DEVICE[1:],
+                        op_log_url=rgw_consts.Node_URLs.APP_DEVICE_OP_LOG[1:],
+                        op_error_count_url=rgw_consts.Node_URLs.APP_DEVICE_OP_ERROR_COUNT[1:],
+                        zb_module_adm_url=rgw_consts.Node_URLs.APP_ADM_ZB_MODULE[1:],
+                        sessionid=sid)
+        except models.NoRightError:
+            self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
+
+
+class AppSyncZbDevice(UIBase):
+    def GetTitle(self):
+        return "Sync Zigbee Device powered by RoundGIS Lab"
+
+    async def async_get(self):
+        try:
+            await api_req_limit.CheckHTTP(self)
+            sid = await CheckRight(self)
+            moduleid = self.get_argument("moduleid")
+            self.render(rgw_consts.Node_TPL_NAMES.APP_SYNC_ZB_DEVICE,
+                        app_js_dir=g_vars.g_cfg['web']['js_dir'],
+                        app_css_dir=g_vars.g_cfg['web']['css_dir'],
+                        app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                        title=self.GetTitle(),
+                        moduleid=moduleid,
+                        sessionid=sid)
+        except models.NoRightError:
+            self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
+
+
+class AppRecapZbDevice(UIBase):
+    def GetTitle(self):
+        return "Recap Zigbee Device powered by RoundGIS Lab"
+
+    def GetDeviceNoTbls(self):
+        return [{'label': i, 'value': i} for i in rgw_consts.XY_DeviceNo.LIST]
+
+    async def async_get(self):
+        try:
+            await api_req_limit.CheckHTTP(self)
+            sid = await CheckRight(self)
+            self.render(rgw_consts.Node_TPL_NAMES.APP_RECAP_ZB_DEVICE,
+                        app_js_dir=g_vars.g_cfg['web']['js_dir'],
+                        app_css_dir=g_vars.g_cfg['web']['css_dir'],
+                        app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                        title=self.GetTitle(),
+                        device_no_tbls=self.GetDeviceNoTbls(),
+                        sessionid=sid)
+        except models.NoRightError:
+            self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
+
+
+class AppDeviceOpLog(UIBase):
+    async def async_get(self):
+        try:
+            await api_req_limit.CheckHTTP(self)
+            sid = await CheckRight(self)
+            deviceid = self.get_argument("deviceid")
+            self.render(rgw_consts.Node_TPL_NAMES.APP_DEVICE_OP_LOG,
+                        app_js_dir=g_vars.g_cfg['web']['js_dir'],
+                        app_css_dir=g_vars.g_cfg['web']['css_dir'],
+                        app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                        title="Device Op Log",
+                        deviceid=deviceid,
+                        sessionid=sid)
+        except models.NoRightError:
+            self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
+
+
+class AppDeviceOpErrorCount(UIBase):
+    async def async_get(self):
+        try:
+            await api_req_limit.CheckHTTP(self)
+            sid = await CheckRight(self)
+            self.render(rgw_consts.Node_TPL_NAMES.APP_DEVICE_OP_ERROR_COUNT,
+                        app_js_dir=g_vars.g_cfg['web']['js_dir'],
+                        app_css_dir=g_vars.g_cfg['web']['css_dir'],
+                        app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                        title="Device Op Error Count",
+                        op_log_url=rgw_consts.Node_URLs.APP_DEVICE_OP_LOG[1:],
+                        sessionid=sid)
+        except models.NoRightError:
+            self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
 
 
 class AppEditSensorTrigger(UIBase):

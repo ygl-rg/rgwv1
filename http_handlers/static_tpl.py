@@ -46,6 +46,10 @@ class JsHandler(AbstractHandler):
 
             'zb_module_rpc.js': {
                 'url': rgw_consts.Node_URLs.API_ZB_MODULE_ADM
+            },
+
+            'zb_device_rpc.js': {
+                'url': rgw_consts.Node_URLs.API_ZB_DEVICE_ADM
             }
         }
 

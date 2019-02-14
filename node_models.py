@@ -9,6 +9,10 @@ import rg_lib
 import rgw_consts
 
 
+class NoRightError(rg_lib.RGError):
+    pass
+
+
 class ErrorTypes:
     @classmethod
     def NoRight(cls):

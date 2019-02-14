@@ -21,3 +21,8 @@ async def CheckMinuteRate(prefix, ip, rate=100):
         pl_obj.expire(key, 60)
         await pl_obj.execute_pipeline()
         return True
+
+
+async def CheckHTTP(req_handler, rate=200):
+    return await CheckMinuteRate('http', rg_lib.Cyclone.TryGetRealIp(req_handler), rate)
+

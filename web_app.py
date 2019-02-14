@@ -29,7 +29,8 @@ def GetApi():
             (rgw_consts.Node_URLs.API_SENSOR_TRIGGER, api_handlers.SensorTriggerAdm),
             (rgw_consts.Node_URLs.API_SWITCH_ADM, api_handlers.SwitchAdm),
             (rgw_consts.Node_URLs.API_EM, api_handlers.EnvMonitor),
-            (rgw_consts.Node_URLs.API_ZB_MODULE_ADM, api_handlers.ZbModuleAdm)
+            (rgw_consts.Node_URLs.API_ZB_MODULE_ADM, api_handlers.ZbModuleAdm),
+            (rgw_consts.Node_URLs.API_ZB_DEVICE_ADM, api_handlers.ZbDeviceAdm)
             ]
 
 
@@ -47,6 +48,12 @@ def GetAPP():
         (rgw_consts.Node_URLs.APP_EDIT_SWITCH, ui_handlers.AppEditSwitch),
         (rgw_consts.Node_URLs.APP_ADM_ZB_MODULE, ui_handlers.AppZbModuleAdm),
         (rgw_consts.Node_URLs.APP_RESTORE_ZB_MODULE, ui_handlers.AppRestoreZbModule),
+        (rgw_consts.Node_URLs.APP_EDIT_ZB_DEVICE, ui_handlers.AppEditZbDevice),
+        (rgw_consts.Node_URLs.APP_ADM_ZB_DEVICE, ui_handlers.AppZbDeviceAdm),
+        (rgw_consts.Node_URLs.APP_SYNC_ZB_DEVICE, ui_handlers.AppSyncZbDevice),
+        (rgw_consts.Node_URLs.APP_RECAP_ZB_DEVICE, ui_handlers.AppRecapZbDevice),
+        (rgw_consts.Node_URLs.APP_DEVICE_OP_LOG, ui_handlers.AppDeviceOpLog),
+        (rgw_consts.Node_URLs.APP_DEVICE_OP_ERROR_COUNT, ui_handlers.AppDeviceOpErrorCount),
         (rgw_consts.Node_URLs.APP_EM_LOGIN, ui_handlers.EmLogin),
         (rgw_consts.Node_URLs.APP_EM, ui_handlers.AppEm),
         (rgw_consts.Node_URLs.APP_EM_SENSOR, ui_handlers.AppEmSensor)
