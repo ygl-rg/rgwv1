@@ -85,11 +85,11 @@ class ZbDevice:
 
     @classmethod
     async def Remove(cls, deviceids):
-        return await cls.Req('RemoveDevice', [{'deviceids': deviceids}], len(deviceids)*3+1)
+        return await cls.Req('RemoveDevice', [{'deviceids': deviceids}], len(deviceids)*10+1)
 
     @classmethod
     async def Reset(cls, deviceids):
-        return await cls.Req('ResetDevice', [{'deviceids': deviceids}], len(deviceids) * 3 + 1)
+        return await cls.Req('ResetDevice', [{'deviceids': deviceids}], len(deviceids)*10+1)
 
     @classmethod
     async def Search(cls, arg):
