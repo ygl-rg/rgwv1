@@ -10,43 +10,24 @@ import rgw_consts
 
 
 class NoRightError(rg_lib.RGError):
-    pass
+    def __init__(self):
+        rg_lib.RGError.__init__(self, 'no right')
+
+
+class AccessOverLimit(rg_lib.RGError):
+    def __init__(self):
+        rg_lib.RGError.__init__(self, 'access over limit')
+
+
+class PasswordError(rg_lib.RGError):
+    def __init__(self):
+        rg_lib.RGError.__init__(self, 'password error')
 
 
 class ErrorTypes:
     @classmethod
-    def NoRight(cls):
-        return rg_lib.ErrorType.DeclaredType("NoRight")
-
-    @classmethod
-    def TypeOfNoRight(cls, err_obj):
-        return err_obj.message['declaredType'] == "NoRight"
-
-    @classmethod
-    def PwdErr(cls, msg):
-        tbl = rg_lib.ErrorType.DeclaredType("PwdErr")
-        tbl['msg'] = msg
-        return tbl
-
-    @classmethod
-    def TypeOfPwdErr(cls, err_obj):
-        return err_obj.message['declaredType'] == "PwdErr"
-
-    @classmethod
     def UnsupportedOp(cls):
         return rg_lib.ErrorType.DeclaredType("UnsupportedOp")
-
-    @classmethod
-    def SessionExpired(cls):
-        return rg_lib.ErrorType.DeclaredType("SessionExpired")
-
-    @classmethod
-    def AccessOverLimit(cls):
-        return rg_lib.ErrorType.DeclaredType("AccessOverLimit")
-
-    @classmethod
-    def TypeOfAccessOverLimit(cls, err_obj):
-        return err_obj.message['declaredType'] == "AccessOverLimit"
 
 
 class UserSession:

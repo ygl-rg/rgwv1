@@ -12,7 +12,7 @@ async def ListModule(req_handler, arg):
     :return: {"devices": [zb device,...]}
     """
     try:
-        await api_req_limit.CheckMinuteRate("ListModule", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(arg['token'])
         return await api_rxg.ZbModule.ListModule(arg['list_no'])
     except Exception:
@@ -26,7 +26,7 @@ async def ProbeDevice(req_handler, para):
     :return:
     """
     try:
-        await api_req_limit.CheckMinuteRate("ProbeDevice", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(para['token'])
         return await api_rxg.ZbModule.ProbeDevice(para['moduleid'])
     except Exception:
@@ -35,7 +35,7 @@ async def ProbeDevice(req_handler, para):
 
 async def ResetModule(req_handler, para):
     try:
-        await api_req_limit.CheckMinuteRate("ResetModule", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(para['token'])
         return await api_rxg.ZbModule.ResetModule(para['moduleid'])
     except Exception:
@@ -50,7 +50,7 @@ async def BackupModule(req_handler, para):
     :return: {deviceids, data_tbl: deviceid->[schedule id,...]}
     """
     try:
-        await api_req_limit.CheckMinuteRate("BackupModule", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(para['token'])
         return await api_rxg.ZbModule.BackupModule(para['moduleid'])
     except Exception:
@@ -65,7 +65,7 @@ async def RestoreModule(req_handler, para):
     :return:
     """
     try:
-        await api_req_limit.CheckMinuteRate("RestoreModule", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(para['token'])
         return await api_rxg.ZbModule.RestoreModule(para['src_moduleid'],
                                                     para['target_moduleid'])
@@ -81,7 +81,7 @@ async def RebootModule(req_handler, para):
     :return: [schedule obj,...]
     """
     try:
-        await api_req_limit.CheckMinuteRate("RebootModule", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(para['token'])
         return await api_rxg.ZbModule.RebootModule(para['moduleid'])
     except Exception:
@@ -95,7 +95,7 @@ async def RebootAll(req_handler, para):
     :return: {groupids: [groupid,...], data_tbl: {groupid->[sensor data]}}
     """
     try:
-        await api_req_limit.CheckMinuteRate("GetSensor", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(para['token'])
         return await api_rxg.ZbModule.RebootAll()
     except Exception:

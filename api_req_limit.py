@@ -14,7 +14,7 @@ async def CheckMinuteRate(prefix, ip, rate=100):
     key = rgw_consts.Keys.MINUTE_RATE_FMT.format(prefix, MinuteKey(curr), ip)
     count = await api_core.BizDB.redis_conn.get(key)
     if (count is not None) and (int(count) > rate):
-        raise rg_lib.RGError(models.ErrorTypes.AccessOverLimit())
+        raise models.AccessOverLimit()
     else:
         pl_obj = await api_core.BizDB.redis_conn.pipeline()
         pl_obj.incr(key)

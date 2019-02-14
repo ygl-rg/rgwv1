@@ -13,7 +13,7 @@ async def GetSwitch(req_handler, arg):
     :return: {"devices": [zb device,...]}
     """
     try:
-        await api_req_limit.CheckMinuteRate("GetSwitch", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(arg['token'])
         return await api_em.GetSwitch(arg)
     except Exception:
@@ -27,7 +27,7 @@ async def OpenSwitch(req_handler, para):
     :return:
     """
     try:
-        await api_req_limit.CheckMinuteRate("OpenSwitch", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(para['token'])
         return await api_em.OpenSwitch(para)
     except Exception:
@@ -36,7 +36,7 @@ async def OpenSwitch(req_handler, para):
 
 async def CloseSwitch(req_handler, para):
     try:
-        await api_req_limit.CheckMinuteRate("CloseSwitch", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(para['token'])
         return await api_em.CloseSwitch(para['switchids'])
     except Exception:
@@ -51,7 +51,7 @@ async def AddSchedule(req_handler, para):
     :return: {deviceids, data_tbl: deviceid->[schedule id,...]}
     """
     try:
-        await api_req_limit.CheckMinuteRate("AddSchedule", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(para['token'])
         return await api_em.AddSchedule(para)
     except Exception:
@@ -66,7 +66,7 @@ async def RemoveSchedule(req_handler, para):
     :return:
     """
     try:
-        await api_req_limit.CheckMinuteRate("RemoveSchedules", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(para['token'])
         return await api_em.RemoveSchedule(para)
     except Exception:
@@ -81,7 +81,7 @@ async def GetUserSchedules(req_handler, para):
     :return: [schedule obj,...]
     """
     try:
-        await api_req_limit.CheckMinuteRate("GetUserSchedules", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(para['token'])
         return await api_em.GetUserSchedules(para)
     except Exception:
@@ -95,7 +95,7 @@ async def GetSensor(req_handler, para):
     :return: {groupids: [groupid,...], data_tbl: {groupid->[sensor data]}}
     """
     try:
-        await api_req_limit.CheckMinuteRate("GetSensor", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         return await api_em.GetSensor(para)
     except Exception:
         rg_lib.Cyclone.HandleErrInException()
@@ -103,7 +103,7 @@ async def GetSensor(req_handler, para):
 
 async def FindSensorMinsAvgLog(req_handler, para):
     try:
-        await api_req_limit.CheckMinuteRate("FindSensorMinsAvgLog", rg_lib.Cyclone.TryGetRealIp(req_handler), 4)
+        await api_req_limit.CheckHTTP(req_handler)
         return await api_em.FindSensorMinsAvgLog(para)
     except Exception:
         rg_lib.Cyclone.HandleErrInException()
@@ -120,7 +120,7 @@ async def ExportSensorMinsAvgLog(req_handler, para):
     :return: URL
     """
     try:
-        await api_req_limit.CheckMinuteRate("ExportSensorMinsAvgLog", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(para['token'])
         return await api_em.ExportSensorMinsAvgLog(para)
     except Exception:
@@ -137,7 +137,7 @@ async def GetSwitchOnDetail(req_handler, para):
     :return: {"recs": [], 'total_val': xx}
     """
     try:
-        await api_req_limit.CheckMinuteRate("GetSwitchOnDetail", rg_lib.Cyclone.TryGetRealIp(req_handler), 4)
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(para['token'])
         return await api_em.GetSwitchOnDetail(para)
     except Exception:
@@ -151,7 +151,7 @@ async def GetLatestTriggerLog(req_handler, para):
     :return: TriggerLog
     """
     try:
-        await api_req_limit.CheckMinuteRate("GetLatestTriggerLog", rg_lib.Cyclone.TryGetRealIp(req_handler), 4)
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(para['token'])
         return await api_core.TriggerLog.GetLatest(para['count'])
     except Exception:
@@ -165,7 +165,7 @@ async def UpdateDeviceName(req_handler, para):
     :return:
     """
     try:
-        await api_req_limit.CheckMinuteRate("UpdateDeviceName", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(para['token'])
         if para['arg']['type'] == 'switch':
             await api_core.Switch.UpdateName(para['arg']['id'], para['arg']['name'], para['arg']['tag'])
@@ -197,7 +197,7 @@ async def ExportSwitchMonthlyUsage(req_handler, para):
     :return: url
     """
     try:
-        await api_req_limit.CheckMinuteRate("ExportSwitchMonthlyUsage", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(para['token'])
         return await api_em.ExportSwitchMonthlyUsage(para)
     except Exception:

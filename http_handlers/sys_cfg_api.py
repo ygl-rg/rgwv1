@@ -15,7 +15,7 @@ async def SetCfg(req_handler, para):
     :return:
     """
     try:
-        await api_req_limit.CheckMinuteRate("SetCfg", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(para['token'])
         await api_core.SysCfg.Set(para['cfg'])
         reactor.callLater(3, defer.ensureDeferred, api_core.PageKite.RestartBackend(g_vars.g_cfg['http_port']))
@@ -31,7 +31,7 @@ async def GetCfg(req_handler, para):
     :return:
     """
     try:
-        await api_req_limit.CheckMinuteRate("GetCfg", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(para['token'])
         return await api_core.SysCfg.Get(["select * from rgw_sys_cfg", tuple()])
     except Exception:
@@ -46,7 +46,6 @@ async def RebootSys(req_handler, arg):
     """
     from twisted.internet import reactor
     try:
-        await api_req_limit.CheckMinuteRate("RebootSys", rg_lib.Cyclone.TryGetRealIp(req_handler))
         await api_auth.CheckRight(arg['token'])
         tp = rg_lib.ProcessProto('reboot')
         reactor.spawnProcess(tp, '/sbin/reboot', ['/sbin/reboot'], {})
@@ -58,7 +57,6 @@ async def RebootSys(req_handler, arg):
 async def RestartSys(req_handler, arg):
     import os
     try:
-        await api_req_limit.CheckMinuteRate("RestartSys", rg_lib.Cyclone.TryGetRealIp(req_handler))
         await api_auth.CheckRight(arg['token'])
         rg_lib.Process.Kill(os.getpid())
         return 'ok'
@@ -68,7 +66,7 @@ async def RestartSys(req_handler, arg):
 
 async def RegisterDevice(req_handler, arg):
     try:
-        await api_req_limit.CheckMinuteRate("RegisterDevice", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(arg['token'])
         devs = await api_xy_device.ProbeAndSync()
         return devs
@@ -78,7 +76,7 @@ async def RegisterDevice(req_handler, arg):
 
 async def SyncDevice(req_handler, arg):
     try:
-        await api_req_limit.CheckMinuteRate("SyncDevice", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(arg['token'])
         await api_xy_device.SyncSwitch()
         await api_xy_device.SyncSensor()

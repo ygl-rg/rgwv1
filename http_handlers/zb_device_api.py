@@ -12,7 +12,7 @@ async def Remove(req_handler, arg):
     :return: ok
     """
     try:
-        await api_req_limit.CheckMinuteRate("RemoveDevice", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(arg['token'])
         return await api_rxg.ZbDevice.Remove(arg['deviceids'])
     except Exception:
@@ -26,7 +26,7 @@ async def Reset(req_handler, para):
     :return:
     """
     try:
-        await api_req_limit.CheckMinuteRate("ResetDevice", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(para['token'])
         return await api_rxg.ZbDevice.Reset(para['deviceids'])
     except Exception:
@@ -35,7 +35,7 @@ async def Reset(req_handler, para):
 
 async def Add(req_handler, para):
     try:
-        await api_req_limit.CheckMinuteRate("AddDevice", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(para['token'])
         return await api_rxg.ZbDevice.Add(para['device'])
     except Exception:
@@ -50,7 +50,7 @@ async def Set(req_handler, para):
     :return: {deviceids, data_tbl: deviceid->[schedule id,...]}
     """
     try:
-        await api_req_limit.CheckMinuteRate("SetDevice", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(para['token'])
         return await api_rxg.ZbDevice.Set(para['device'])
     except Exception:
@@ -65,7 +65,7 @@ async def Get(req_handler, para):
     :return:
     """
     try:
-        await api_req_limit.CheckMinuteRate("GetDevice", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(para['token'])
         return await api_rxg.ZbDevice.Get(para['deviceid'])
     except Exception:
@@ -80,11 +80,9 @@ async def Search(req_handler, para):
     :return: [schedule obj,...]
     """
     try:
-        await api_req_limit.CheckMinuteRate("SearchDevice", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(para['token'])
-        res = await api_rxg.ZbDevice.Search(para['arg'])
-        log.msg(res)
-        return res
+        return await api_rxg.ZbDevice.Search(para['arg'])
     except Exception:
         rg_lib.Cyclone.HandleErrInException()
 
@@ -96,7 +94,7 @@ async def GetOpLog(req_handler, para):
     :return: {groupids: [groupid,...], data_tbl: {groupid->[sensor data]}}
     """
     try:
-        await api_req_limit.CheckMinuteRate("GetOpLog", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(para['token'])
         return await api_rxg.ZbDevice.GetOpLog(para['deviceid'], para['start_ts'], para['stop_ts'])
     except Exception:
@@ -110,7 +108,7 @@ async def GetOpErrorCount(req_handler, para):
     :return: {groupids: [groupid,...], data_tbl: {groupid->[sensor data]}}
     """
     try:
-        await api_req_limit.CheckMinuteRate("GetOpErrorCount", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(para['token'])
         return await api_rxg.ZbDevice.GetOpErrorCount(para['start_ts'], para['stop_ts'])
     except Exception:
@@ -124,7 +122,7 @@ async def GetNId(req_handler, para):
     :return: {groupids: [groupid,...], data_tbl: {groupid->[sensor data]}}
     """
     try:
-        await api_req_limit.CheckMinuteRate("GetNId", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(para['token'])
         return await api_rxg.ZbDevice.GetNId(para['deviceid'], para['moduleid'])
     except Exception:
@@ -138,7 +136,7 @@ async def Reboot(req_handler, para):
     :return: {groupids: [groupid,...], data_tbl: {groupid->[sensor data]}}
     """
     try:
-        await api_req_limit.CheckMinuteRate("RebootDevice", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(para['token'])
         return await api_rxg.ZbDevice.Reboot(para['deviceids'])
     except Exception:

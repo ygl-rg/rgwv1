@@ -84,17 +84,16 @@ class AppAdmLogin(UIBase):
 
     async def async_get(self):
         try:
-            await api_req_limit.CheckMinuteRate("AppAdmLogin", rg_lib.Cyclone.TryGetRealIp(self), 5)
+            await api_req_limit.CheckHTTP(self)
             user_lang = GetLangCode(self)
             self.RenderPage(user_lang, '')
-        except rg_lib.RGError as err:
-            if models.ErrorTypes.TypeOfAccessOverLimit(err):
-                self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
-            else:
-                raise cyclone_web.HTTPError(500)
+        except models.AccessOverLimit:
+            self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
+        except models.NoRightError:
+            self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
 
     async def async_post(self):
-        await api_req_limit.CheckMinuteRate("adm_login", rg_lib.Cyclone.TryGetRealIp(self), 5)
+        await api_req_limit.CheckHTTP(self)
         pwd = self.get_argument('pwd', '').strip()
         adm_type = self.get_argument('adm_type', 'switch')
         user_lang = GetLangCode(self)
@@ -107,15 +106,10 @@ class AppAdmLogin(UIBase):
                     self.redirect(self.url_tbl[adm_type])
                 else:
                     raise ValueError("adm type incorrect")
-            except rg_lib.RGError as rge:
-                if models.ErrorTypes.TypeOfNoRight(rge):
-                    self.RenderPage(user_lang, "no right")
-                elif models.ErrorTypes.TypeOfPwdErr(rge):
-                    self.RenderPage(user_lang, 'password error')
-                elif models.ErrorTypes.TypeOfAccessOverLimit(rge):
-                    self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
-                else:
-                    self.RenderPage(user_lang, 'server error')
+            except models.AccessOverLimit:
+                self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
+            except models.PasswordError:
+                self.RenderPage(user_lang, 'password error')
             except Exception:
                 log.err()
                 self.RenderPage(user_lang, 'server error')
@@ -152,18 +146,11 @@ class AppLoginBase(UIBase):
         raise NotImplementedError()
 
     async def async_get(self):
-        try:
-            await api_req_limit.CheckMinuteRate(rg_lib.String.toutf8(self.GetLoginUrl()),
-                                                rg_lib.Cyclone.TryGetRealIp(self), 5)
-            self.RenderPage("")
-        except rg_lib.RGError as err:
-            if models.ErrorTypes.TypeOfAccessOverLimit(err):
-                self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
-            else:
-                self.finish(rgw_consts.WebContent.SERVER_ERROR)
+        await api_req_limit.CheckHTTP(self)
+        self.RenderPage("")
 
     async def async_post(self):
-        await api_req_limit.CheckMinuteRate("AppLoginBase", rg_lib.Cyclone.TryGetRealIp(self), 5)
+        await api_req_limit.CheckHTTP(self)
         pwd = self.get_argument('pwd', '').strip()
         ulang = self.get_argument('user_lang', 'en')
         if pwd:
@@ -173,13 +160,10 @@ class AppLoginBase(UIBase):
                                 httponly=True)
                 self.set_cookie(rgw_consts.Cookies.USER_LANG, ulang, httponly=True)
                 self.GotoPage()
-            except rg_lib.RGError as rge:
-                if models.ErrorTypes.TypeOfPwdErr(rge):
-                    self.RenderPage(models.MultiText.GetValue(multi_lang.password_error, ulang))
-                elif models.ErrorTypes.TypeOfAccessOverLimit(rge):
-                    self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
-                else:
-                    self.RenderPage(models.MultiText.GetValue(multi_lang.server_error, ulang))
+            except models.PasswordError:
+                self.RenderPage(models.MultiText.GetValue(multi_lang.password_error, ulang))
+            except models.AccessOverLimit:
+                self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
             except Exception:
                 log.err()
                 self.RenderPage(models.MultiText.GetValue(multi_lang.server_error, ulang))
@@ -229,7 +213,7 @@ class ViewSwitchSchedule(UIBase):
 
     async def handlePage_(self):
         try:
-            await api_req_limit.CheckMinuteRate("ViewSwitchSchedule", rg_lib.Cyclone.TryGetRealIp(self), 3)
+            await api_req_limit.CheckHTTP(self)
             sid = await CheckRight(self)
             ulang = GetLangCode(self)
             label_tbl = self.GetLabel()[ulang]
@@ -242,13 +226,10 @@ class ViewSwitchSchedule(UIBase):
                         valid_label=label_tbl['valid'],
                         invalid_label=label_tbl['invalid'],
                         remove_label=label_tbl['remove'])
-        except rg_lib.RGError as rge:
-            if models.ErrorTypes.TypeOfNoRight(rge):
-                self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
-            elif models.ErrorTypes.TypeOfAccessOverLimit(rge):
-                self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
-            else:
-                self.finish(rgw_consts.WebContent.SERVER_ERROR)
+        except models.AccessOverLimit:
+            self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
+        except models.NoRightError:
+            self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
 
     async def async_get(self):
         await self.handlePage_()
@@ -271,7 +252,7 @@ class ViewSensorMinsAvgTrend(UIBase):
 
     async def handlePage_(self):
         try:
-            await api_req_limit.CheckMinuteRate("ViewSensorMinsAvgTrend", rg_lib.Cyclone.TryGetRealIp(self), 3)
+            await api_req_limit.CheckHTTP(self)
             sid = await CheckRight(self)
             ulang = GetLangCode(self)
             temp_str = self.get_argument('sensorids')
@@ -291,14 +272,11 @@ class ViewSensorMinsAvgTrend(UIBase):
                             sensorids=sensorids,
                             mins_interval_tbls=self.GetMinsInterval())
             else:
-                self.finish("no sensor")
-        except rg_lib.RGError as rge:
-            if models.ErrorTypes.TypeOfNoRight(rge):
-                self.redirect(DetectLoginPortal(self))
-            elif models.ErrorTypes.TypeOfAccessOverLimit(rge):
-                self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
-            else:
-                self.finish(rgw_consts.WebContent.SERVER_ERROR)
+                raise cyclone_web.HTTPError(404, 'no sensor')
+        except models.NoRightError:
+            self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
+        except models.AccessOverLimit:
+            self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
 
     async def async_get(self):
         return await self.handlePage_()
@@ -321,7 +299,7 @@ class ViewSensorMinsAvgData(UIBase):
 
     async def handlePage_(self):
         try:
-            await api_req_limit.CheckMinuteRate("ViewSensorMinsAvgData", rg_lib.Cyclone.TryGetRealIp(self))
+            await api_req_limit.CheckHTTP(self)
             sid = await CheckRight(self)
             ulang = GetLangCode(self)
             temp = self.get_argument('ids', '')
@@ -345,14 +323,11 @@ class ViewSensorMinsAvgData(UIBase):
                             sensors_tbl=sensors_tbl,
                             mins_interval_tbls=self.GetMinsInterval())
             else:
-                self.finish("no sensor")
-        except rg_lib.RGError as rge:
-            if models.ErrorTypes.TypeOfNoRight(rge):
-                self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
-            elif models.ErrorTypes.TypeOfAccessOverLimit(rge):
-                self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
-            else:
-                self.finish(rgw_consts.WebContent.SERVER_ERROR)
+                raise cyclone_web.HTTPError(404, 'no sensor')
+        except models.AccessOverLimit:
+            self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
+        except models.NoRightError:
+            self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
 
     async def async_get(self):
         return await self.handlePage_()
@@ -371,7 +346,7 @@ class ViewSwitchOnLogDetail(UIBase):
 
     async def handlePage_(self):
         try:
-            await api_req_limit.CheckMinuteRate("ViewSwitchOnLogDetail", rg_lib.Cyclone.TryGetRealIp(self), 3)
+            await api_req_limit.CheckHTTP(self)
             sid = await CheckRight(self)
             ulang = GetLangCode(self)
             temp = self.get_argument('switchid', '')
@@ -390,13 +365,10 @@ class ViewSwitchOnLogDetail(UIBase):
                         switchid=temp,
                         switch_name=row.get('name', ''),
                         query_btn_label=label_tbl['query'])
-        except rg_lib.RGError as rge:
-            if models.ErrorTypes.TypeOfNoRight(rge):
-                self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
-            elif models.ErrorTypes.TypeOfAccessOverLimit(rge):
-                self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
-            else:
-                self.finish(rgw_consts.WebContent.SERVER_ERROR)
+        except models.AccessOverLimit:
+            self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
+        except models.NoRightError:
+            self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
 
     async def async_get(self):
         return await self.handlePage_()
@@ -436,7 +408,7 @@ class ViewSensorRecentTrend(UIBase):
 
     async def handlePage_(self):
         try:
-            await api_req_limit.CheckMinuteRate("ViewSensorRecentTrend", rg_lib.Cyclone.TryGetRealIp(self), 3)
+            await api_req_limit.CheckHTTP(self)
             sid = await CheckRight(self)
             ulang = GetLangCode(self)
             temp_str = self.get_argument('sensorids')
@@ -464,14 +436,11 @@ class ViewSensorRecentTrend(UIBase):
                             sensor_recent_hours_plotting_url=rgw_consts.Node_URLs.VIEW_RECENT_HOURS_SENSOR_DATA_PLOTTING[
                                                              1:])
             else:
-                self.finish("no sensor")
-        except rg_lib.RGError as rge:
-            if models.ErrorTypes.TypeOfNoRight(rge):
-                self.redirect(DetectLoginPortal(self))
-            elif models.ErrorTypes.TypeOfAccessOverLimit(rge):
-                self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
-            else:
-                self.finish(rgw_consts.WebContent.SERVER_ERROR)
+                raise cyclone_web.HTTPError(404, 'no sensor')
+        except models.AccessOverLimit:
+            self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
+        except models.NoRightError:
+            self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
 
     async def async_get(self):
         return await self.handlePage_()
@@ -493,7 +462,7 @@ class ViewMonthlySwitchUsage(UIBase):
 
     async def handlePage_(self):
         try:
-            await api_req_limit.CheckMinuteRate("ViewMonthlySwitchUsage", rg_lib.Cyclone.TryGetRealIp(self), 3)
+            await api_req_limit.CheckHTTP(self)
             sid = await CheckRight(self)
             ulang = GetLangCode(self)
             label_tbl = self.GetLabel()[ulang]
@@ -505,13 +474,10 @@ class ViewMonthlySwitchUsage(UIBase):
                         sessionid=sid, user_lang=ulang,
                         switch_on_detail_url=rgw_consts.Node_URLs.VIEW_SWITCH_ON_LOG_DETAIL[1:],
                         export_label=label_tbl['export'])
-        except rg_lib.RGError as rge:
-            if models.ErrorTypes.TypeOfNoRight(rge):
-                self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
-            elif models.ErrorTypes.TypeOfAccessOverLimit(rge):
-                self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
-            else:
-                self.finish(rgw_consts.WebContent.SERVER_ERROR)
+        except models.AccessOverLimit:
+            self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
+        except models.NoRightError:
+            self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
 
     async def async_get(self):
         return await self.handlePage_()
@@ -545,7 +511,7 @@ class AppEm(UIBase):
 
     async def handlePage_(self):
         try:
-            await api_req_limit.CheckMinuteRate("AppEm", rg_lib.Cyclone.TryGetRealIp(self), 3)
+            await api_req_limit.CheckHTTP(self)
             sid = await CheckRight(self)
             ulang = GetLangCode(self)
             label_tbl = self.GetLabel()[ulang]
@@ -566,13 +532,10 @@ class AppEm(UIBase):
                         set_sensor_trigger_view_url=rgw_consts.Node_URLs.APP_ADM_SENSOR_TRIGGER[1:],
                         em_sensor_url=rgw_consts.Node_URLs.APP_EM_SENSOR[1:],
                         goto_label=label_tbl['goto'])
-        except rg_lib.RGError as rge:
-            if models.ErrorTypes.TypeOfNoRight(rge):
-                self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
-            elif models.ErrorTypes.TypeOfAccessOverLimit(rge):
-                self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
-            else:
-                self.finish(rgw_consts.WebContent.SERVER_ERROR)
+        except models.AccessOverLimit:
+            self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
+        except models.NoRightError:
+            self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
 
     async def async_get(self):
         return await self.handlePage_()
@@ -598,7 +561,7 @@ class AppEmSensor(UIBase):
 
     async def handlePage_(self):
         try:
-            await api_req_limit.CheckMinuteRate("AppEmSensor", rg_lib.Cyclone.TryGetRealIp(self), 3)
+            await api_req_limit.CheckHTTP(self)
             sid = await CheckRight(self)
             ulang = GetLangCode(self)
             label_tbl = self.GetLabel()[ulang]
@@ -619,13 +582,10 @@ class AppEmSensor(UIBase):
                         plot2_label=label_tbl['plot2'],
                         history_trend_url_label=label_tbl['history_trend_url'],
                         history_data_url_label=label_tbl['history_data_url'])
-        except rg_lib.RGError as rge:
-            if models.ErrorTypes.TypeOfNoRight(rge):
-                self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
-            elif models.ErrorTypes.TypeOfAccessOverLimit(rge):
-                self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
-            else:
-                self.finish(rgw_consts.WebContent.SERVER_ERROR)
+        except models.AccessOverLimit:
+            self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
+        except models.NoRightError:
+            self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
 
     async def async_get(self):
         return await self.handlePage_()
@@ -639,7 +599,7 @@ class AppSysCfg(UIBase):
 
     async def async_get(self):
         try:
-            await api_req_limit.CheckMinuteRate("AppSysCfg", rg_lib.Cyclone.TryGetRealIp(self), 3)
+            await api_req_limit.CheckHTTP(self)
             sid = await CheckRight(self)
             self.render(rgw_consts.Node_TPL_NAMES.APP_SYS_CFG,
                         app_js_dir=g_vars.g_cfg['web']['js_dir'],
@@ -647,13 +607,10 @@ class AppSysCfg(UIBase):
                         app_template_dir=g_vars.g_cfg['web']['template_dir'],
                         tz_options=self.GetTimezoneOpts(),
                         title="Sys Config", sessionid=sid)
-        except rg_lib.RGError as err:
-            if models.ErrorTypes.TypeOfAccessOverLimit(err):
-                self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
-            elif models.ErrorTypes.TypeOfNoRight(err):
-                self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
-            else:
-                self.finish(rgw_consts.WebContent.SERVER_ERROR)
+        except models.AccessOverLimit:
+            self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
+        except models.NoRightError:
+            self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
 
 
 class AppSysCfgMobile(UIBase):
@@ -694,7 +651,7 @@ class AppSysCfgMobile(UIBase):
 
     async def async_get(self):
         try:
-            await api_req_limit.CheckMinuteRate("AppSysCfgMobile", rg_lib.Cyclone.TryGetRealIp(self), 3)
+            await api_req_limit.CheckHTTP(self)
             sid = await CheckRight(self)
             ulang = GetLangCode(self)
             label_tbl = self.GetLabel()[ulang]
@@ -713,13 +670,10 @@ class AppSysCfgMobile(UIBase):
                         password=label_tbl['password'],
                         email_sender=label_tbl['email_sender'],
                         user_lang=ulang)
-        except rg_lib.RGError as err:
-            if models.ErrorTypes.TypeOfAccessOverLimit(err):
-                self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
-            elif models.ErrorTypes.TypeOfNoRight(err):
-                self.finish(rgw_consts.WebContent.SERVER_ERROR)
-            else:
-                self.finish(rgw_consts.WebContent.SERVER_ERROR)
+        except models.AccessOverLimit:
+            self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
+        except models.NoRightError:
+            self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
 
 
 class AppEditSensor(UIBase):
@@ -731,7 +685,7 @@ class AppEditSensor(UIBase):
 
     async def async_get(self):
         try:
-            await api_req_limit.CheckMinuteRate("AppEditSensor", rg_lib.Cyclone.TryGetRealIp(self), 3)
+            await api_req_limit.CheckHTTP(self)
             sid = await CheckRight(self)
             edit_mode = self.get_argument("edit_mode")
             if edit_mode == "edit":
@@ -753,13 +707,10 @@ class AppEditSensor(UIBase):
                             id=0, edit_mode=edit_mode,
                             data_no_tbls=self.GetDataNoTbls(),
                             iconid_tbls=self.GetIconTbls())
-        except rg_lib.RGError as err:
-            if models.ErrorTypes.TypeOfAccessOverLimit(err):
-                self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
-            elif models.ErrorTypes.TypeOfNoRight(err):
-                self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
-            else:
-                self.finish(rgw_consts.WebContent.SERVER_ERROR)
+        except models.AccessOverLimit:
+            self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
+        except models.NoRightError:
+            self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
 
 
 class AppSensorAdm(UIBase):
@@ -768,7 +719,7 @@ class AppSensorAdm(UIBase):
 
     async def async_get(self):
         try:
-            await api_req_limit.CheckMinuteRate("AppSensorAdm", rg_lib.Cyclone.TryGetRealIp(self), 3)
+            await api_req_limit.CheckHTTP(self)
             sid = await CheckRight(self)
             self.render(rgw_consts.Node_TPL_NAMES.APP_ADM_SENSOR,
                         app_js_dir=g_vars.g_cfg['web']['js_dir'],
@@ -776,13 +727,10 @@ class AppSensorAdm(UIBase):
                         app_template_dir=g_vars.g_cfg['web']['template_dir'],
                         title=self.GetTitle(), sessionid=sid,
                         edit_url=rgw_consts.Node_URLs.APP_EDIT_SENSOR[1:])
-        except rg_lib.RGError as err:
-            if models.ErrorTypes.TypeOfAccessOverLimit(err):
-                self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
-            elif models.ErrorTypes.TypeOfNoRight(err):
-                self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
-            else:
-                self.finish(rgw_consts.WebContent.SERVER_ERROR)
+        except models.AccessOverLimit:
+            self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
+        except models.NoRightError:
+            self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
 
 
 class AppEditSwitch(UIBase):
@@ -791,7 +739,7 @@ class AppEditSwitch(UIBase):
 
     async def async_get(self):
         try:
-            await api_req_limit.CheckMinuteRate("AppEditSwitch", rg_lib.Cyclone.TryGetRealIp(self), 3)
+            await api_req_limit.CheckHTTP(self)
             sid = await CheckRight(self)
             edit_mode = self.get_argument("edit_mode")
             if edit_mode == "edit":
@@ -813,13 +761,10 @@ class AppEditSwitch(UIBase):
                             id='',
                             edit_mode=edit_mode,
                             iconid_tbls=self.GetIconTbls())
-        except rg_lib.RGError as err:
-            if models.ErrorTypes.TypeOfAccessOverLimit(err):
-                self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
-            elif models.ErrorTypes.TypeOfNoRight(err):
-                self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
-            else:
-                self.finish(rgw_consts.WebContent.SERVER_ERROR)
+        except models.AccessOverLimit:
+            self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
+        except models.NoRightError:
+            self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
 
 
 class AppSwitchAdm(UIBase):
@@ -828,7 +773,7 @@ class AppSwitchAdm(UIBase):
 
     async def async_get(self):
         try:
-            await api_req_limit.CheckMinuteRate("AppSwitchAdm", rg_lib.Cyclone.TryGetRealIp(self), 3)
+            await api_req_limit.CheckHTTP(self)
             sid = await CheckRight(self)
             self.render(rgw_consts.Node_TPL_NAMES.APP_ADM_SWITCH,
                         app_js_dir=g_vars.g_cfg['web']['js_dir'],
@@ -836,13 +781,10 @@ class AppSwitchAdm(UIBase):
                         app_template_dir=g_vars.g_cfg['web']['template_dir'],
                         title=self.GetTitle(), sessionid=sid,
                         edit_url=rgw_consts.Node_URLs.APP_EDIT_SWITCH[1:])
-        except rg_lib.RGError as err:
-            if models.ErrorTypes.TypeOfAccessOverLimit(err):
-                self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
-            elif models.ErrorTypes.TypeOfNoRight(err):
-                self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
-            else:
-                self.finish(rgw_consts.WebContent.SERVER_ERROR)
+        except models.AccessOverLimit:
+            self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
+        except models.NoRightError:
+            self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
 
 
 class AppZbModuleAdm(UIBase):
@@ -851,7 +793,7 @@ class AppZbModuleAdm(UIBase):
 
     async def async_get(self):
         try:
-            await api_req_limit.CheckMinuteRate("AppZbModuleAdm", rg_lib.Cyclone.TryGetRealIp(self), 3)
+            await api_req_limit.CheckHTTP(self)
             sid = await CheckRight(self)
             self.render(rgw_consts.Node_TPL_NAMES.APP_ADM_ZB_MODULE,
                         app_js_dir=g_vars.g_cfg['web']['js_dir'],
@@ -861,6 +803,8 @@ class AppZbModuleAdm(UIBase):
                         sync_zb_dev_url=rgw_consts.Node_URLs.APP_SYNC_ZB_DEVICE[1:],
                         restore_module_url=rgw_consts.Node_URLs.APP_RESTORE_ZB_MODULE[1:],
                         sessionid=sid)
+        except models.AccessOverLimit:
+            self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
         except models.NoRightError:
             self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
 
@@ -871,6 +815,7 @@ class AppRestoreZbModule(UIBase):
 
     async def async_get(self):
         try:
+            await api_req_limit.CheckHTTP(self)
             sid = await CheckRight(self)
             moduleid = self.get_argument("moduleid")
             self.render(rgw_consts.Node_TPL_NAMES.APP_RESTORE_ZB_MODULE,
@@ -880,6 +825,8 @@ class AppRestoreZbModule(UIBase):
                         title=self.GetTitle(),
                         target_moduleid=moduleid,
                         sessionid=sid)
+        except models.AccessOverLimit:
+            self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
         except models.NoRightError:
             self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
 
@@ -890,7 +837,7 @@ class AppEditZbDevice(UIBase):
 
     async def async_get(self):
         try:
-            await api_req_limit.CheckMinuteRate("AppEditZbDevice", rg_lib.Cyclone.TryGetRealIp(self), 3)
+            await api_req_limit.CheckHTTP(self)
             sid = await CheckRight(self)
             edit_mode = self.get_argument("edit_mode")
             if edit_mode == "edit":
@@ -905,6 +852,8 @@ class AppEditZbDevice(UIBase):
                             sessionid=sid)
             else:
                 raise cyclone_web.HTTPError(404, "zigbee device edit mode incorrect")
+        except models.AccessOverLimit:
+            self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
         except models.NoRightError:
             self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
 
@@ -928,6 +877,8 @@ class AppZbDeviceAdm(UIBase):
                         op_error_count_url=rgw_consts.Node_URLs.APP_DEVICE_OP_ERROR_COUNT[1:],
                         zb_module_adm_url=rgw_consts.Node_URLs.APP_ADM_ZB_MODULE[1:],
                         sessionid=sid)
+        except models.AccessOverLimit:
+            self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
         except models.NoRightError:
             self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
 
@@ -948,6 +899,8 @@ class AppSyncZbDevice(UIBase):
                         title=self.GetTitle(),
                         moduleid=moduleid,
                         sessionid=sid)
+        except models.AccessOverLimit:
+            self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
         except models.NoRightError:
             self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
 
@@ -970,6 +923,8 @@ class AppRecapZbDevice(UIBase):
                         title=self.GetTitle(),
                         device_no_tbls=self.GetDeviceNoTbls(),
                         sessionid=sid)
+        except models.AccessOverLimit:
+            self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
         except models.NoRightError:
             self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
 
@@ -987,6 +942,8 @@ class AppDeviceOpLog(UIBase):
                         title="Device Op Log",
                         deviceid=deviceid,
                         sessionid=sid)
+        except models.AccessOverLimit:
+            self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
         except models.NoRightError:
             self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
 
@@ -1003,6 +960,8 @@ class AppDeviceOpErrorCount(UIBase):
                         title="Device Op Error Count",
                         op_log_url=rgw_consts.Node_URLs.APP_DEVICE_OP_LOG[1:],
                         sessionid=sid)
+        except models.AccessOverLimit:
+            self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
         except models.NoRightError:
             self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
 
@@ -1055,7 +1014,7 @@ class AppEditSensorTrigger(UIBase):
 
     async def async_get(self):
         try:
-            await api_req_limit.CheckMinuteRate("AppEditSwitchActionTrigger", rg_lib.Cyclone.TryGetRealIp(self), 3)
+            await api_req_limit.CheckHTTP(self)
             sid = await CheckRight(self)
             ulang = GetLangCode(self)
             trigid = self.get_argument('triggerid', "0")
@@ -1081,13 +1040,10 @@ class AppEditSensorTrigger(UIBase):
                         save_btn=label_tbl['save_btn'],
                         triggerid=trigid,
                         user_lang=ulang)
-        except rg_lib.RGError as err:
-            if models.ErrorTypes.TypeOfAccessOverLimit(err):
-                self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
-            elif models.ErrorTypes.TypeOfNoRight(err):
-                self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
-            else:
-                self.finish(rgw_consts.WebContent.SERVER_ERROR)
+        except models.AccessOverLimit:
+            self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
+        except models.NoRightError:
+            self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
 
 
 class AppAdmSensorTrigger(UIBase):
@@ -1103,7 +1059,7 @@ class AppAdmSensorTrigger(UIBase):
 
     async def async_get(self):
         try:
-            await api_req_limit.CheckMinuteRate("AppAdmSwitchActionTrigger", rg_lib.Cyclone.TryGetRealIp(self), 3)
+            await api_req_limit.CheckHTTP(self)
             sid = await CheckRight(self)
             ulang = GetLangCode(self)
             label_tbl = self.GetLabel()
@@ -1118,13 +1074,10 @@ class AppAdmSensorTrigger(UIBase):
                         edit_label=label_tbl[ulang]['edit'],
                         remove_label=label_tbl[ulang]['remove'],
                         edit_action_url=rgw_consts.Node_URLs.APP_EDIT_SENSOR_TRIGGER[1:])
-        except rg_lib.RGError as err:
-            if models.ErrorTypes.TypeOfAccessOverLimit(err):
-                self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
-            elif models.ErrorTypes.TypeOfNoRight(err):
-                self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
-            else:
-                self.finish(rgw_consts.WebContent.SERVER_ERROR)
+        except models.AccessOverLimit:
+            self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
+        except models.NoRightError:
+            self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
 
 
 class Logout(UIBase):
@@ -1137,16 +1090,18 @@ class Logout(UIBase):
 
     async def async_get(self):
         try:
-            await api_req_limit.CheckMinuteRate("logout", rg_lib.Cyclone.TryGetRealIp(self), 3)
+            await api_req_limit.CheckHTTP(self)
             await self.__logout()
-        except rg_lib.RGError as err_obj:
-            if models.ErrorTypes.TypeOfAccessOverLimit(err_obj):
-                self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
+        except models.AccessOverLimit:
+            self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
+        except models.NoRightError:
+            self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
 
     async def async_post(self):
         try:
-            await api_req_limit.CheckMinuteRate("logout", rg_lib.Cyclone.TryGetRealIp(self), 3)
+            await api_req_limit.CheckHTTP(self)
             await self.__logout()
-        except rg_lib.RGError as err_obj:
-            if models.ErrorTypes.TypeOfAccessOverLimit(err_obj):
-                self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
+        except models.AccessOverLimit:
+            self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
+        except models.NoRightError:
+            self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)

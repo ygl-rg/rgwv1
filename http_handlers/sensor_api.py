@@ -16,7 +16,7 @@ async def AddSensor(req_handler, arg):
     :return:
     """
     try:
-        await api_req_limit.CheckMinuteRate("AddSensor", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(arg['token'])
         return await __GetSensor(await api_core.Sensor.Add(arg['sensor']))
     except Exception:
@@ -30,7 +30,7 @@ async def RemoveSensor(req_handler, arg):
     :return:
     """
     try:
-        await api_req_limit.CheckMinuteRate("RemoveSensor", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(arg['token'])
         await api_core.Sensor.Remove(arg['sensorids'])
         return "ok"
@@ -45,7 +45,7 @@ async def SetSensor(req_handler, arg):
     :return:
     """
     try:
-        await api_req_limit.CheckMinuteRate("SetSensor", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(arg['token'])
         await api_core.Sensor.Update(arg['sensor'])
         return await __GetSensor(arg['sensor']['id'])
@@ -60,7 +60,7 @@ async def GetSensor(req_handler, arg):
     :return:
     """
     try:
-        await api_req_limit.CheckMinuteRate("GetSensor", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(arg['token'])
         return await api_core.Sensor.ById(arg['sensorid'])
     except Exception:
@@ -74,7 +74,7 @@ async def SearchSensor(req_handler, para):
     :return:
     """
     try:
-        await api_req_limit.CheckMinuteRate("SearchSensor", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(para['token'])
         return await api_core.Sensor.Search(para)
     except Exception as e:
@@ -88,7 +88,7 @@ async def SyncSensor(req_handler, arg):
     :return: "ok"
     """
     try:
-        await api_req_limit.CheckMinuteRate("SyncSensor", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(arg['token'])
         await api_xy_device.SyncSensor()
         return "ok"

@@ -21,7 +21,7 @@ async def FindTrigger(req_handler, para):
     :return: user notice expr rows
     """
     try:
-        await api_req_limit.CheckMinuteRate('FindTrigger', rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(para['token'])
         return await __SearchSensorTrigger(para)
     except Exception:
@@ -35,7 +35,7 @@ async def SetTrigger(req_handler, arg):
     :return: conditional action
     """
     try:
-        await api_req_limit.CheckMinuteRate('SetTrigger', rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(arg['token'])
         return await api_core.SensorTrigger.Upsert(arg['trigger'])
     except Exception:
@@ -49,7 +49,7 @@ async def RemoveTrigger(req_handler, arg):
     :return: string
     """
     try:
-        await api_req_limit.CheckMinuteRate('RemoveTrigger', rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(arg['token'])
         await api_core.SensorTrigger.Remove(arg['triggerids'])
         return "ok"
@@ -64,7 +64,7 @@ async def GetTrigger(req_handler, arg):
     :return:
     """
     try:
-        await api_req_limit.CheckMinuteRate('GetActionTrigger', rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(arg['token'])
         return await api_core.SensorTrigger.GetMdl(arg['triggerid'])
     except Exception:

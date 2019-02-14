@@ -17,7 +17,7 @@ async def AddSwitch(req_handler, arg):
     :return:
     """
     try:
-        await api_req_limit.CheckMinuteRate("AddSwitch", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(arg['token'])
         await api_core.Switch.Add(arg['switch'])
         return await __GetSwitch(arg['switch']['id'])
@@ -32,7 +32,7 @@ async def RemoveSwitch(req_handler, arg):
     :return:
     """
     try:
-        await api_req_limit.CheckMinuteRate("RemoveSwitch", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(arg['token'])
         await api_core.Switch.Remove(arg['switchids'])
         return "ok"
@@ -47,7 +47,7 @@ async def SetSwitch(req_handler, arg):
     :return:
     """
     try:
-        await api_req_limit.CheckMinuteRate("SetSwitch", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(arg['token'])
         await api_core.Switch.Update(arg['switch'])
         return await __GetSwitch(arg['switch']['id'])
@@ -62,7 +62,7 @@ async def GetSwitch(req_handler, arg):
     :return:
     """
     try:
-        await api_req_limit.CheckMinuteRate("GetSwitch", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(arg['token'])
         return await __GetSwitch(arg['switchid'])
     except Exception:
@@ -76,7 +76,7 @@ async def SearchSwitch(req_handler, para):
     :return:
     """
     try:
-        await api_req_limit.CheckMinuteRate("SearchSwitch", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(para['token'])
         return await api_core.Switch.Search(para)
     except Exception as e:
@@ -90,7 +90,7 @@ async def SyncSwitch(req_handler, arg):
     :return:
     """
     try:
-        await api_req_limit.CheckMinuteRate("SyncSwitch", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(arg['token'])
         await api_xy_device.SyncSwitch()
         return "ok"
