@@ -62,11 +62,13 @@ class AppAdmLogin(UIBase):
         self.url_tbl = {'sensor': rgw_consts.Node_URLs.APP_ADM_SENSOR,
                         'switch': rgw_consts.Node_URLs.APP_ADM_SWITCH,
                         'zb_module': rgw_consts.Node_URLs.APP_ADM_ZB_MODULE,
+                        'zb_device': rgw_consts.Node_URLs.APP_ADM_ZB_DEVICE,
                         'sys_cfg': rgw_consts.Node_URLs.APP_SYS_CFG}
 
         self.adm_types = [{'name': 'Sensor/传感器', 'value': 'sensor'},
                           {'name': 'Switch/开关', 'value': 'switch', "checked": 1},
                           {'name': 'Zigbee Module', 'value': 'zb_module'},
+                          {'name': 'Zigbee Device', 'value': 'zb_device'},
                           {'name': 'System Config/系统参数', 'value': 'sys_cfg'}]
 
     def RenderPage(self, user_lang, hint):
