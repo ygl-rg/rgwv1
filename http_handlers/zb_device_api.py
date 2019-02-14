@@ -82,7 +82,9 @@ async def Search(req_handler, para):
     try:
         await api_req_limit.CheckMinuteRate("SearchDevice", rg_lib.Cyclone.TryGetRealIp(req_handler))
         await api_auth.CheckRight(para['token'])
-        return await api_rxg.ZbDevice.Search(para['arg'])
+        res = await api_rxg.ZbDevice.Search(para['arg'])
+        log.msg(res)
+        return res
     except Exception:
         rg_lib.Cyclone.HandleErrInException()
 
