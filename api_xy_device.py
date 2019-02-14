@@ -7,7 +7,7 @@ import rgw_consts
 
 
 async def SyncSensor():
-    devs = await api_rxg.ListDevice('sensor')
+    devs = await api_rxg.EM.ListDevice('sensor')
     sensors = []
     temp = [d for d in devs if d['device_no'] == rgw_consts.XY_DeviceNo.XY_TEMP_HUMIDITY_SENSOR]
     GenTemperatureHumidity(sensors, temp)
@@ -29,7 +29,7 @@ async def SyncSensor():
 
 
 async def SyncSwitch():
-    devs = await api_rxg.ListDevice('switch')
+    devs = await api_rxg.EM.ListDevice('switch')
     switches = []
     GenSwitch(switches, devs)
     sql_rows = []

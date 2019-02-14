@@ -23,7 +23,7 @@ async def ScanSensor():
         ready_sensors = []
         sensors = await ListSensor()
         sensorids = [s['id'] for s in sensors]
-        devs = await api_rxg.GetSensorVal(sensorids)
+        devs = await api_rxg.EM.GetSensorVal(sensorids)
         curr_ts = rg_lib.DateTime.ts()
         dev_tbl = {i['id']: i for i in devs}
         for sensor in sensors:

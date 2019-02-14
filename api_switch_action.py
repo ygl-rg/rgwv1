@@ -76,7 +76,7 @@ async def Close(switchids):
 
 async def __Close(switchid):
     await Remove([switchid])
-    await api_rxg.CloseSwitch(switchid)
+    await api_rxg.EM.CloseSwitch(switchid)
 
 
 async def Open(switchids, dt_obj, working_secs):
@@ -134,7 +134,7 @@ async def DoAction(dt_obj):
             await Acquire(i['id'])
             action = await GetReadyOn(dt_obj, i['id'])
             if action:
-                dev_mdl = await api_rxg.OpenSwitch(action['switchid'])
+                dev_mdl = await api_rxg.EM.OpenSwitch(action['switchid'])
                 if dev_mdl:
                     await UpdateNextStep(action['switchid'], rg_lib.DateTime.utc())
             action = await GetReadyOff(dt_obj, i['id'])
@@ -166,7 +166,7 @@ async def AutoSync():
     switches = await api_core.BizDB.Query([sql_str, []])
     validids = []
     for i in switches:
-        dev_mdls = await api_rxg.ReadDevice([i['id']], True)
+        dev_mdls = await api_rxg.EM.ReadDevice([i['id']], True)
         if len(dev_mdls) > 0:
             validids.append(i['id'])
             try:
@@ -175,10 +175,10 @@ async def AutoSync():
                 if row:
                     if row['op_status'] == 1:
                         if dev_mdls[0]['vals'][0] == models.SwitchAction.OFF:
-                            await api_rxg.OpenSwitch(dev_mdls[0]['id'])
+                            await api_rxg.EM.OpenSwitch(dev_mdls[0]['id'])
                 else:
                     if dev_mdls[0]['vals'][0] == models.SwitchAction.ON:
-                        await api_rxg.CloseSwitch(i['id'])
+                        await api_rxg.EM.CloseSwitch(i['id'])
             finally:
                 Release(i['id'])
     if len(validids) > 0:
