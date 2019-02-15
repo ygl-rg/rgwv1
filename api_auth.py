@@ -1,7 +1,6 @@
 import json
 import rgw_consts
 import api_core
-import rg_lib
 import node_models as models
 
 

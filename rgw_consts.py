@@ -149,7 +149,6 @@ class Keys:
     MINUTE_RATE_FMT = "access_minute_rate:{0}_{1}_{2}" #prefix,key &ip
     USER_SESSION = 'user_session:{0}'
     SENSOR_TRIGGER_INTERVAL = 'sensor_trigger_interval:{0}'  # action rowid
-    DEVICE_OP_COUNT = "device_op_count:{0}" # switchid
 
 
 class WebContent:

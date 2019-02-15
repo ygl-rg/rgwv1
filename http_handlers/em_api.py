@@ -183,7 +183,7 @@ async def ListSwitchMonthlyUsage(req_handler, para):
     :return: {"switches": [switch modls], "rec_tbl": {switchid:[SwitchOpDuration,...]}}
     """
     try:
-        await api_req_limit.CheckMinuteRate("ListSwitchMonthlyUsage", rg_lib.Cyclone.TryGetRealIp(req_handler))
+        await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(para['token'])
         return await api_em.ListSwitchMonthlyUsage(para)
     except Exception:
