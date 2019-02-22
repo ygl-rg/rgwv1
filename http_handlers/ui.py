@@ -976,7 +976,9 @@ class AppEditSensorTrigger(UIBase):
                    'save_btn': 'save',
                    'check_interval': 'check interval(minute)',
                    'name': 'name',
-                   'no_condition_err': "error, no conditions"},
+                   'message': 'message',
+                   'no_condition_err': "error, no conditions",
+                   'condition': 'condition'},
 
             "zh-cn": {"sensor": "传感器", "switch": "开关",
                       'start_time': '开始', 'stop_time': '结束',
@@ -985,7 +987,9 @@ class AppEditSensorTrigger(UIBase):
                       'save_btn': '保存',
                       'check_interval': '探测范围(XX分钟)',
                       'name': '名字',
-                      'no_condition_err': "保存错误,没有条件"},
+                      'message': '消息',
+                      'no_condition_err': "保存错误,没有条件",
+                      'condition': '条件'},
 
             "zh-tw": {"sensor": "傳感器", "switch": "開關",
                       'start_time': '開始', 'stop_time': '結束',
@@ -994,7 +998,9 @@ class AppEditSensorTrigger(UIBase):
                       'save_btn': '保存',
                       'check_interval': '探測範圍(XX分鐘)',
                       'name': '名字',
-                      'no_condition_err': '保存錯誤，沒有條件'}
+                      'message': '訊息',
+                      'no_condition_err': '保存錯誤，沒有條件',
+                      'condition': '條件'}
         }
 
     def GetCheckIntervalTbls(self):
@@ -1033,14 +1039,6 @@ class AppEditSensorTrigger(UIBase):
                         sensor_tbls=sensor_tbls,
                         switch_tbls=switch_tbls,
                         check_interval_tbls=self.GetCheckIntervalTbls(),
-                        switch_label=label_tbl['switch'],
-                        check_interval_label=label_tbl['check_interval'],
-                        start_time_label=label_tbl['start_time'],
-                        stop_time_label=label_tbl['stop_time'],
-                        name_label=label_tbl['name'],
-                        update_btn=label_tbl['update_btn'],
-                        remove_btn=label_tbl['remove_btn'],
-                        save_btn=label_tbl['save_btn'],
                         triggerid=trigid,
                         user_lang=ulang)
         except models.AccessOverLimit:
