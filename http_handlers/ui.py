@@ -1010,7 +1010,7 @@ class AppEditSensorTrigger(UIBase):
                       from rgw_switch r1 limit ?"""
         sql_args = (rgw_consts.DbConsts.SEARCH_LIMIT,)
         rows = await api_core.BizDB.Query([sql_str, sql_args])
-        return [{'value': '', 'label': '------'}] + [{'value': r['switchid'], 'label': r['switch_name']} for r in rows]
+        return [{'value': ' ', 'label': '------'}] + [{'value': r['switchid'], 'label': r['switch_name']} for r in rows]
 
     async def async_get(self):
         try:
@@ -1020,7 +1020,6 @@ class AppEditSensorTrigger(UIBase):
             trigid = self.get_argument('triggerid', "0")
             sensor_tbls = await self.GetSensorTbls()
             switch_tbls = await self.GetSwitchTbls()
-            log.msg(switch_tbls)
             label_tbl = self.GetLabelTbl()[ulang]
             self.render(rgw_consts.Node_TPL_NAMES.APP_EDIT_SENSOR_TRIGGER,
                         app_js_dir=g_vars.g_cfg['web']['js_dir'],
