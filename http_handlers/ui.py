@@ -1010,7 +1010,7 @@ class AppEditSensorTrigger(UIBase):
                       from rgw_switch r1 limit ?"""
         sql_args = (rgw_consts.DbConsts.SEARCH_LIMIT,)
         rows = await api_core.BizDB.Query([sql_str, sql_args])
-        return [{'value': ' ', 'label': '------'}] + [{'value': r['switchid'], 'label': r['switch_name']} for r in rows]
+        return [{'value': rgw_consts.PLACEHODER, 'label': '---------'}] + [{'value': r['switchid'], 'label': r['switch_name']} for r in rows]
 
     async def async_get(self):
         try:

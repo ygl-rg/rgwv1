@@ -1,5 +1,6 @@
 from twisted.python import log
 import rg_lib
+import rgw_consts
 import api_core
 import api_sensor_data
 import api_switch_action
@@ -85,8 +86,8 @@ async def __HandleTriggerHelper(ts, trigger_mdl):
             if not has_valid_interval:
                 switch_infos = await api_core.SensorTrigger.Query(["""select * from rgw_sensor_trigger_switch
                                                                   where triggerid=?""", (trigger_mdl['id'],)])
-                on_switches = [s for s in switch_infos if s['switchid'] and s['action_no'] == 'ON']
-                off_switchids = [s['switchid'] for s in switch_infos if s['switchid'] and s['action_no'] == 'OFF']
+                on_switches = [s for s in switch_infos if s['switchid'] != rgw_consts.PLACEHODER and s['action_no'] == 'ON']
+                off_switchids = [s['switchid'] for s in switch_infos if s['switchid'] != rgw_consts.PLACEHODER and s['action_no'] == 'OFF']
                 if len(on_switches) > 0:
                     await api_switch_action.Open2({s['switchid']: s['working_seconds'] for s in on_switches},
                                                   rg_lib.DateTime.utc())

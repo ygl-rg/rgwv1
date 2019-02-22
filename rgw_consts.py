@@ -162,3 +162,5 @@ class Network:
     ONLINE = "ONLINE"
     OFFLINE = "OFFLINE"
 
+
+PLACEHODER = "_"
