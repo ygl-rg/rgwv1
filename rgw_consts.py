@@ -131,7 +131,7 @@ class Node_TPL_NAMES:
     APP_SYS_CFG_MOBILE = r'app_sys_cfg2_tpl.html'
     APP_EDIT_SENSOR = r'app_edit_sensor_tpl.html'
     APP_ADM_SENSOR = r'app_adm_sensor_tpl.html'
-    APP_EDIT_SENSOR_TRIGGER = r"app_edit_sensor_trigger_tpl.html"
+    APP_EDIT_SENSOR_TRIGGER = r"app_edit_sensor_trigger2_tpl.html"
     APP_ADM_SENSOR_TRIGGER = r"app_adm_sensor_trigger_tpl.html"
     APP_EDIT_SWITCH = r'app_edit_switch_tpl.html'
     APP_ADM_SWITCH = r'app_adm_switch_tpl.html'
