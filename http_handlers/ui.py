@@ -1053,9 +1053,12 @@ class AppAdmSensorTrigger(UIBase):
 
     def GetLabel(self):
         return {
-            "en": {"remove": "remove", "refresh": "refresh", 'add': 'add', 'edit': 'edit'},
-            "zh-cn": {"remove": "删除", "refresh": "刷新", 'add': "新增", 'edit': '编辑'},
-            "zh-tw": {"remove": "刪除", "refresh": "刷新", 'add': "新增", 'edit': '編輯'}
+            "en": {"remove": "remove", "refresh": "refresh", 'add': 'add', 'edit': 'edit',
+                   'name': 'name', 'start': 'start', 'stop': 'end'},
+            "zh-cn": {"remove": "删除", "refresh": "刷新", 'add': "新增", 'edit': '编辑',
+                      'name': '名字', 'start': '开始', 'stop': '结束'},
+            "zh-tw": {"remove": "刪除", "refresh": "刷新", 'add': "新增", 'edit': '編輯',
+                      'name': '名字', 'start': '開始', 'stop': '結束'}
         }
 
     async def async_get(self):
@@ -1070,10 +1073,7 @@ class AppAdmSensorTrigger(UIBase):
                         app_template_dir=g_vars.g_cfg['web']['template_dir'],
                         title=self.GetTitle(), sessionid=sid,
                         user_lang=ulang,
-                        refresh_label=label_tbl[ulang]['refresh'],
-                        add_label=label_tbl[ulang]['add'],
-                        edit_label=label_tbl[ulang]['edit'],
-                        remove_label=label_tbl[ulang]['remove'],
+                        label_tbl=label_tbl[ulang],
                         edit_action_url=rgw_consts.Node_URLs.APP_EDIT_SENSOR_TRIGGER[1:])
         except models.AccessOverLimit:
             self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
