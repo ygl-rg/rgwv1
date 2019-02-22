@@ -1020,6 +1020,7 @@ class AppEditSensorTrigger(UIBase):
             trigid = self.get_argument('triggerid', "0")
             sensor_tbls = await self.GetSensorTbls()
             switch_tbls = await self.GetSwitchTbls()
+            log.msg(switch_tbls)
             label_tbl = self.GetLabelTbl()[ulang]
             self.render(rgw_consts.Node_TPL_NAMES.APP_EDIT_SENSOR_TRIGGER,
                         app_js_dir=g_vars.g_cfg['web']['js_dir'],
