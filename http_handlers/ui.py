@@ -971,7 +971,7 @@ class AppEditSensorTrigger(UIBase):
         return {
             "en": {"sensor": "sensor", "switch": "switch",
                    'start_time': 'start', 'stop_time': 'stop',
-                   'update_btn': 'update',
+                   'update_btn': 'update condition',
                    'remove_btn': 'remove',
                    'save_btn': 'save',
                    'check_interval': 'check interval(minute)',
@@ -979,7 +979,7 @@ class AppEditSensorTrigger(UIBase):
 
             "zh-cn": {"sensor": "传感器", "switch": "开关",
                       'start_time': '开始', 'stop_time': '结束',
-                      'update_btn': '更新',
+                      'update_btn': '更新条件',
                       'remove_btn': '移除',
                       'save_btn': '保存',
                       'check_interval': '探测范围(XX分钟)',
@@ -987,7 +987,7 @@ class AppEditSensorTrigger(UIBase):
 
             "zh-tw": {"sensor": "傳感器", "switch": "開關",
                       'start_time': '開始', 'stop_time': '結束',
-                      'update_btn': '更新',
+                      'update_btn': '更新條件',
                       'remove_btn': '移除',
                       'save_btn': '保存',
                       'check_interval': '探測範圍(XX分鐘)',
