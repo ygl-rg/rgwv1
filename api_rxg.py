@@ -30,7 +30,7 @@ async def Req(rpc_no, method, params, timeout):
 class ZbModule:
     @classmethod
     async def Req(cls, method, params, timeout):
-        return await Req('rxg/api/zbmoduleadm', method, params, timeout)
+        return await Req('api/zbmoduleadm', method, params, timeout)
 
     @classmethod
     async def ListModule(cls, list_no):
@@ -65,7 +65,7 @@ class ZbModule:
 class ZbDevice:
     @classmethod
     async def Req(cls, method, params, timeout):
-        return await Req('rxg/api/zbdeviceadm', method, params, timeout)
+        return await Req('api/zbdeviceadm', method, params, timeout)
 
     @classmethod
     async def Add(cls, device_mdl):
@@ -114,7 +114,7 @@ class ZbDevice:
 class EM:
     @classmethod
     async def Req(cls, method, params, timeout):
-        return await Req('rxg/api/em', method, params, timeout)
+        return await Req('api/em', method, params, timeout)
 
     @classmethod
     def ListDevice(cls, list_no):
