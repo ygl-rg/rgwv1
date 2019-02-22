@@ -972,26 +972,29 @@ class AppEditSensorTrigger(UIBase):
             "en": {"sensor": "sensor", "switch": "switch",
                    'start_time': 'start', 'stop_time': 'stop',
                    'update_btn': 'update condition',
-                   'remove_btn': 'remove',
+                   'remove_btn': 'remove condition',
                    'save_btn': 'save',
                    'check_interval': 'check interval(minute)',
-                   'name': 'name'},
+                   'name': 'name',
+                   'no_condition_err': "error, no conditions"},
 
             "zh-cn": {"sensor": "传感器", "switch": "开关",
                       'start_time': '开始', 'stop_time': '结束',
                       'update_btn': '更新条件',
-                      'remove_btn': '移除',
+                      'remove_btn': '移除条件',
                       'save_btn': '保存',
                       'check_interval': '探测范围(XX分钟)',
-                      'name': '名字'},
+                      'name': '名字',
+                      'no_condition_err': "保存错误,没有条件"},
 
             "zh-tw": {"sensor": "傳感器", "switch": "開關",
                       'start_time': '開始', 'stop_time': '結束',
                       'update_btn': '更新條件',
-                      'remove_btn': '移除',
+                      'remove_btn': '移除條件',
                       'save_btn': '保存',
                       'check_interval': '探測範圍(XX分鐘)',
-                      'name': '名字'}
+                      'name': '名字',
+                      'no_condition_err': '保存錯誤，沒有條件'}
         }
 
     def GetCheckIntervalTbls(self):
@@ -1026,10 +1029,10 @@ class AppEditSensorTrigger(UIBase):
                         app_css_dir=g_vars.g_cfg['web']['css_dir'],
                         app_template_dir=g_vars.g_cfg['web']['template_dir'],
                         title="Set Trigger", sessionid=sid,
+                        label_tbl=label_tbl,
                         sensor_tbls=sensor_tbls,
                         switch_tbls=switch_tbls,
                         check_interval_tbls=self.GetCheckIntervalTbls(),
-                        sensor_label=label_tbl['sensor'],
                         switch_label=label_tbl['switch'],
                         check_interval_label=label_tbl['check_interval'],
                         start_time_label=label_tbl['start_time'],
