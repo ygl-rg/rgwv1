@@ -266,7 +266,7 @@ async def ExportSensorMinsAvgLog(req_handler, para):
         file_name = "{0}.xlsx".format(bson.ObjectId())
         file_path = os_path.join(g_vars.g_cfg['web']['export_path'], file_name)
         await threads.deferToThread(sensor_log_report.Make, file_path, log_tbl)
-        return {'url': os_path.join('/', rgw_consts.Node_URLs.EXPORT_FMT.format(file_name))}
+        return {'url': os_path.join('/', rgw_consts.URLs.EXPORT_FMT.format(file_name))}
     except Exception:
         rg_lib.Cyclone.HandleErrInException()
 
@@ -361,6 +361,6 @@ async def ExportSwitchMonthlyUsage(req_handler, para):
         file_name = "{0}.xlsx".format(bson.ObjectId())
         file_path = os_path.join(g_vars.g_cfg['web']['export_path'], file_name)
         await threads.deferToThread(monthly_switch_usage_report.Make, file_path, arg)
-        return {'url': os_path.join('/', rgw_consts.Node_URLs.EXPORT_FMT.format(file_name))}
+        return {'url': os_path.join('/', rgw_consts.URLs.EXPORT_FMT.format(file_name))}
     except Exception:
         rg_lib.Cyclone.HandleErrInException()

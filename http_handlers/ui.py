@@ -49,11 +49,11 @@ async def CheckRight(req_handler):
 
 class AppAdmLogin(UIBase):
     def initialize(self, **kwargs):
-        self.url_tbl = {'sensor': rgw_consts.Node_URLs.APP_ADM_SENSOR,
-                        'switch': rgw_consts.Node_URLs.APP_ADM_SWITCH,
-                        'zb_module': rgw_consts.Node_URLs.APP_ADM_ZB_MODULE,
-                        'zb_device': rgw_consts.Node_URLs.APP_ADM_ZB_DEVICE,
-                        'sys_cfg': rgw_consts.Node_URLs.APP_SYS_CFG}
+        self.url_tbl = {'sensor': rgw_consts.URLs.APP_ADM_SENSOR,
+                        'switch': rgw_consts.URLs.APP_ADM_SWITCH,
+                        'zb_module': rgw_consts.URLs.APP_ADM_ZB_MODULE,
+                        'zb_device': rgw_consts.URLs.APP_ADM_ZB_DEVICE,
+                        'sys_cfg': rgw_consts.URLs.APP_SYS_CFG}
 
         self.adm_types = [{'name': 'Sensor/传感器', 'value': 'sensor'},
                           {'name': 'Switch/开关', 'value': 'switch', "checked": 1},
@@ -62,12 +62,12 @@ class AppAdmLogin(UIBase):
                           {'name': 'System Config/系统参数', 'value': 'sys_cfg'}]
 
     def RenderPage(self, user_lang, hint):
-        self.render(rgw_consts.Node_TPL_NAMES.APP_ADM_LOGIN,
+        self.render(rgw_consts.TPL_NAMES.APP_ADM_LOGIN,
                     app_js_dir=g_vars.g_cfg['web']['js_dir'],
                     app_template_dir=g_vars.g_cfg['web']['template_dir'],
                     title="rgw adm",
                     hint=hint,
-                    loginurl=rgw_consts.Node_URLs.APP_ADM_LOGIN,
+                    loginurl=rgw_consts.URLs.APP_ADM_LOGIN,
                     bkgpng=g_vars.g_cfg['web']['login_page_bkg'],
                     user_lang=user_lang,
                     adm_types=self.adm_types)
@@ -80,7 +80,7 @@ class AppAdmLogin(UIBase):
         except models.AccessOverLimit:
             self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
         except models.NoRightError:
-            self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
+            self.redirect(rgw_consts.URLs.APP_EM_LOGIN)
 
     async def async_post(self):
         await api_req_limit.CheckHTTP(self)
@@ -111,7 +111,7 @@ class AppLoginBase(UIBase):
     def RenderPage(self, hint_str):
         ulang = GetLangCode(self)
         app_opts = self.GetAppOptions()[ulang]
-        self.render(rgw_consts.Node_TPL_NAMES.APP_LOGIN,
+        self.render(rgw_consts.TPL_NAMES.APP_LOGIN,
                     app_js_dir=g_vars.g_cfg['web']['js_dir'],
                     app_template_dir=g_vars.g_cfg['web']['template_dir'],
                     title=self.GetTitle(),
@@ -166,7 +166,7 @@ class EmLogin(AppLoginBase):
         return "Elastic Monitoring"
 
     def GetLoginUrl(self):
-        return rgw_consts.Node_URLs.APP_EM_LOGIN
+        return rgw_consts.URLs.APP_EM_LOGIN
 
     def GetAppOptions(self):
         return {
@@ -183,9 +183,9 @@ class EmLogin(AppLoginBase):
     def GotoPage(self):
         web_type = self.get_argument("web_type", "em")
         if web_type == "em":
-            self.redirect(rgw_consts.Node_URLs.APP_EM)
+            self.redirect(rgw_consts.URLs.APP_EM)
         elif web_type == 'em_sensor':
-            self.redirect(rgw_consts.Node_URLs.APP_EM_SENSOR)
+            self.redirect(rgw_consts.URLs.APP_EM_SENSOR)
         else:
             raise cyclone_web.HTTPError(404)
 
@@ -220,7 +220,7 @@ class ViewSwitchSchedule(UIBase):
             sid = await CheckRight(self)
             ulang = GetLangCode(self)
             label_tbl = self.GetLabel()[ulang]
-            self.render(rgw_consts.Node_TPL_NAMES.VIEW_SWITCH_SCHEDULES,
+            self.render(rgw_consts.TPL_NAMES.VIEW_SWITCH_SCHEDULES,
                         app_js_dir=g_vars.g_cfg['web']['js_dir'],
                         app_css_dir=g_vars.g_cfg['web']['css_dir'],
                         app_template_dir=g_vars.g_cfg['web']['template_dir'],
@@ -230,7 +230,7 @@ class ViewSwitchSchedule(UIBase):
         except models.AccessOverLimit:
             self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
         except models.NoRightError:
-            self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
+            self.redirect(rgw_consts.URLs.APP_EM_LOGIN)
 
     async def async_get(self):
         await self.handlePage_()
@@ -264,7 +264,7 @@ class ViewSensorMinsAvgTrend(UIBase):
                                              sensorids)
             sensors = await api_core.BizDB.Query([sql_str, sensorids])
             if len(sensors) > 0:
-                self.render(rgw_consts.Node_TPL_NAMES.VIEW_SENSOR_MINS_AVG_TREND,
+                self.render(rgw_consts.TPL_NAMES.VIEW_SENSOR_MINS_AVG_TREND,
                             app_js_dir=g_vars.g_cfg['web']['js_dir'],
                             app_css_dir=g_vars.g_cfg['web']['css_dir'],
                             app_template_dir=g_vars.g_cfg['web']['template_dir'],
@@ -275,7 +275,7 @@ class ViewSensorMinsAvgTrend(UIBase):
             else:
                 raise cyclone_web.HTTPError(404, 'no sensor')
         except models.NoRightError:
-            self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
+            self.redirect(rgw_consts.URLs.APP_EM_LOGIN)
         except models.AccessOverLimit:
             self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
 
@@ -314,7 +314,7 @@ class ViewSensorMinsAvgData(UIBase):
             sensors = await api_core.BizDB.Query([sql_str, sensorids])
             sensors_tbl = {i['id']: i for i in sensors}
             if len(sensors) > 0:
-                self.render(rgw_consts.Node_TPL_NAMES.VIEW_SENSOR_MINS_AVG_DATA,
+                self.render(rgw_consts.TPL_NAMES.VIEW_SENSOR_MINS_AVG_DATA,
                             app_js_dir=g_vars.g_cfg['web']['js_dir'],
                             app_css_dir=g_vars.g_cfg['web']['css_dir'],
                             app_template_dir=g_vars.g_cfg['web']['template_dir'],
@@ -328,7 +328,7 @@ class ViewSensorMinsAvgData(UIBase):
         except models.AccessOverLimit:
             self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
         except models.NoRightError:
-            self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
+            self.redirect(rgw_consts.URLs.APP_EM_LOGIN)
 
     async def async_get(self):
         return await self.handlePage_()
@@ -364,7 +364,7 @@ class ViewSwitchOnLogDetail(UIBase):
             if row is None:
                 raise cyclone_web.HTTPError(404, 'no switch')
             label_tbl = self.GetLabel()[ulang]
-            self.render(rgw_consts.Node_TPL_NAMES.VIEW_SWITCH_ON_LOG_DETAIL,
+            self.render(rgw_consts.TPL_NAMES.VIEW_SWITCH_ON_LOG_DETAIL,
                         app_js_dir=g_vars.g_cfg['web']['js_dir'],
                         app_css_dir=g_vars.g_cfg['web']['css_dir'],
                         app_template_dir=g_vars.g_cfg['web']['template_dir'],
@@ -376,7 +376,7 @@ class ViewSwitchOnLogDetail(UIBase):
         except models.AccessOverLimit:
             self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
         except models.NoRightError:
-            self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
+            self.redirect(rgw_consts.URLs.APP_EM_LOGIN)
 
     async def async_get(self):
         return await self.handlePage_()
@@ -429,7 +429,7 @@ class ViewSensorRecentTrend(UIBase):
             sensors = await api_core.BizDB.Query([sql_str, sensorids])
             if len(sensors) > 0:
                 label_tbl = self.GetLabelTbl()[ulang]
-                self.render(rgw_consts.Node_TPL_NAMES.VIEW_SENSORS_RECENT_TREND,
+                self.render(rgw_consts.TPL_NAMES.VIEW_SENSORS_RECENT_TREND,
                             app_js_dir=g_vars.g_cfg['web']['js_dir'],
                             app_css_dir=g_vars.g_cfg['web']['css_dir'],
                             app_template_dir=g_vars.g_cfg['web']['template_dir'],
@@ -440,14 +440,14 @@ class ViewSensorRecentTrend(UIBase):
                             mins_interval_tbls=self.GetMinsInterval(),
                             label_tbl=label_tbl,
                             plotting_no=plotting_no,
-                            sensor_recent_hours_plotting_url=rgw_consts.Node_URLs.VIEW_RECENT_HOURS_SENSOR_DATA_PLOTTING[
+                            sensor_recent_hours_plotting_url=rgw_consts.URLs.VIEW_RECENT_HOURS_SENSOR_DATA_PLOTTING[
                                                              1:])
             else:
                 raise cyclone_web.HTTPError(404, 'no sensor')
         except models.AccessOverLimit:
             self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
         except models.NoRightError:
-            self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
+            self.redirect(rgw_consts.URLs.APP_EM_LOGIN)
 
     async def async_get(self):
         return await self.handlePage_()
@@ -473,18 +473,18 @@ class ViewMonthlySwitchUsage(UIBase):
             sid = await CheckRight(self)
             ulang = GetLangCode(self)
             label_tbl = self.GetLabel()[ulang]
-            self.render(rgw_consts.Node_TPL_NAMES.VIEW_SWITCH_MONTHLY_USAGE,
+            self.render(rgw_consts.TPL_NAMES.VIEW_SWITCH_MONTHLY_USAGE,
                         app_js_dir=g_vars.g_cfg['web']['js_dir'],
                         app_css_dir=g_vars.g_cfg['web']['css_dir'],
                         app_template_dir=g_vars.g_cfg['web']['template_dir'],
                         title=self.GetTitle(),
                         sessionid=sid, user_lang=ulang,
-                        switch_on_detail_url=rgw_consts.Node_URLs.VIEW_SWITCH_ON_LOG_DETAIL[1:],
+                        switch_on_detail_url=rgw_consts.URLs.VIEW_SWITCH_ON_LOG_DETAIL[1:],
                         label_tbl=label_tbl)
         except models.AccessOverLimit:
             self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
         except models.NoRightError:
-            self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
+            self.redirect(rgw_consts.URLs.APP_EM_LOGIN)
 
     async def async_get(self):
         return await self.handlePage_()
@@ -525,7 +525,7 @@ class AppEm(UIBase):
             sid = await CheckRight(self)
             ulang = GetLangCode(self)
             label_tbl = self.GetLabel()[ulang]
-            self.render(rgw_consts.Node_TPL_NAMES.APP_EM,
+            self.render(rgw_consts.TPL_NAMES.APP_EM,
                         app_js_dir=g_vars.g_cfg['web']['js_dir'],
                         app_css_dir=g_vars.g_cfg['web']['css_dir'],
                         app_template_dir=g_vars.g_cfg['web']['template_dir'],
@@ -533,14 +533,14 @@ class AppEm(UIBase):
                         sessionid=sid,
                         user_lang=ulang,
                         label_tbl=label_tbl,
-                        switch_schedule_view_url=rgw_consts.Node_URLs.VIEW_SWITCH_SCHEDULES[1:],
-                        view_monthly_switch_usage_url=rgw_consts.Node_URLs.VIEW_MONTHLY_SWITCH_USAGE[1:],
-                        set_sensor_trigger_view_url=rgw_consts.Node_URLs.APP_ADM_SENSOR_TRIGGER[1:],
-                        em_sensor_url=rgw_consts.Node_URLs.APP_EM_SENSOR[1:])
+                        switch_schedule_view_url=rgw_consts.URLs.VIEW_SWITCH_SCHEDULES[1:],
+                        view_monthly_switch_usage_url=rgw_consts.URLs.VIEW_MONTHLY_SWITCH_USAGE[1:],
+                        set_sensor_trigger_view_url=rgw_consts.URLs.APP_ADM_SENSOR_TRIGGER[1:],
+                        em_sensor_url=rgw_consts.URLs.APP_EM_SENSOR[1:])
         except models.AccessOverLimit:
             self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
         except models.NoRightError:
-            self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
+            self.redirect(rgw_consts.URLs.APP_EM_LOGIN)
 
     async def async_get(self):
         return await self.handlePage_()
@@ -573,18 +573,18 @@ class AppEmSensor(UIBase):
             sid = await CheckRight(self)
             ulang = GetLangCode(self)
             label_tbl = self.GetLabel()[ulang]
-            self.render(rgw_consts.Node_TPL_NAMES.APP_EM_SENSOR,
+            self.render(rgw_consts.TPL_NAMES.APP_EM_SENSOR,
                         app_js_dir=g_vars.g_cfg['web']['js_dir'],
                         app_css_dir=g_vars.g_cfg['web']['css_dir'],
                         app_template_dir=g_vars.g_cfg['web']['template_dir'],
                         title=self.GetTitle(),
                         sessionid=sid, user_lang=ulang,
                         label_tbl=label_tbl,
-                        sensor_mins_avg_trend_url=rgw_consts.Node_URLs.VIEW_SENSOR_MINS_AVG_TREND[1:],
-                        sensor_mins_avg_data_url=rgw_consts.Node_URLs.VIEW_SENSOR_MINS_AVG_DATA[1:],
-                        sensor_recent_hours_plotting_url=rgw_consts.Node_URLs.VIEW_RECENT_HOURS_SENSOR_DATA_PLOTTING[1:],
-                        sensor_recent_trend_url=rgw_consts.Node_URLs.VIEW_SENSORS_RECENT_TREND[1:],
-                        em_url=rgw_consts.Node_URLs.APP_EM[1:],
+                        sensor_mins_avg_trend_url=rgw_consts.URLs.VIEW_SENSOR_MINS_AVG_TREND[1:],
+                        sensor_mins_avg_data_url=rgw_consts.URLs.VIEW_SENSOR_MINS_AVG_DATA[1:],
+                        sensor_recent_hours_plotting_url=rgw_consts.URLs.VIEW_RECENT_HOURS_SENSOR_DATA_PLOTTING[1:],
+                        sensor_recent_trend_url=rgw_consts.URLs.VIEW_SENSORS_RECENT_TREND[1:],
+                        em_url=rgw_consts.URLs.APP_EM[1:],
                         goto_label=label_tbl['goto'],
                         plot1_label=label_tbl['plot1'],
                         plot2_label=label_tbl['plot2'],
@@ -593,7 +593,7 @@ class AppEmSensor(UIBase):
         except models.AccessOverLimit:
             self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
         except models.NoRightError:
-            self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
+            self.redirect(rgw_consts.URLs.APP_EM_LOGIN)
 
     async def async_get(self):
         return await self.handlePage_()
@@ -609,7 +609,7 @@ class AppSysCfg(UIBase):
         try:
             await api_req_limit.CheckHTTP(self)
             sid = await CheckRight(self)
-            self.render(rgw_consts.Node_TPL_NAMES.APP_SYS_CFG,
+            self.render(rgw_consts.TPL_NAMES.APP_SYS_CFG,
                         app_js_dir=g_vars.g_cfg['web']['js_dir'],
                         app_css_dir=g_vars.g_cfg['web']['css_dir'],
                         app_template_dir=g_vars.g_cfg['web']['template_dir'],
@@ -618,7 +618,7 @@ class AppSysCfg(UIBase):
         except models.AccessOverLimit:
             self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
         except models.NoRightError:
-            self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
+            self.redirect(rgw_consts.URLs.APP_ADM_LOGIN)
 
 
 class AppSysCfgMobile(UIBase):
@@ -663,7 +663,7 @@ class AppSysCfgMobile(UIBase):
             sid = await CheckRight(self)
             ulang = GetLangCode(self)
             label_tbl = self.GetLabel()[ulang]
-            self.render(rgw_consts.Node_TPL_NAMES.APP_SYS_CFG_MOBILE,
+            self.render(rgw_consts.TPL_NAMES.APP_SYS_CFG_MOBILE,
                         app_js_dir=g_vars.g_cfg['web']['js_dir'],
                         app_css_dir=g_vars.g_cfg['web']['css_dir'],
                         app_template_dir=g_vars.g_cfg['web']['template_dir'],
@@ -674,7 +674,7 @@ class AppSysCfgMobile(UIBase):
         except models.AccessOverLimit:
             self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
         except models.NoRightError:
-            self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
+            self.redirect(rgw_consts.URLs.APP_EM_LOGIN)
 
 
 class AppEditSensor(UIBase):
@@ -691,7 +691,7 @@ class AppEditSensor(UIBase):
             edit_mode = self.get_argument("edit_mode")
             if edit_mode == "edit":
                 rowid = self.get_argument("id")
-                self.render(rgw_consts.Node_TPL_NAMES.APP_EDIT_SENSOR,
+                self.render(rgw_consts.TPL_NAMES.APP_EDIT_SENSOR,
                             app_js_dir=g_vars.g_cfg['web']['js_dir'],
                             app_css_dir=g_vars.g_cfg['web']['css_dir'],
                             app_template_dir=g_vars.g_cfg['web']['template_dir'],
@@ -700,7 +700,7 @@ class AppEditSensor(UIBase):
                             data_no_tbls=self.GetDataNoTbls(),
                             iconid_tbls=self.GetIconTbls())
             else:
-                self.render(rgw_consts.Node_TPL_NAMES.APP_EDIT_SENSOR,
+                self.render(rgw_consts.TPL_NAMES.APP_EDIT_SENSOR,
                             app_js_dir=g_vars.g_cfg['web']['js_dir'],
                             app_css_dir=g_vars.g_cfg['web']['css_dir'],
                             app_template_dir=g_vars.g_cfg['web']['template_dir'],
@@ -711,7 +711,7 @@ class AppEditSensor(UIBase):
         except models.AccessOverLimit:
             self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
         except models.NoRightError:
-            self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
+            self.redirect(rgw_consts.URLs.APP_ADM_LOGIN)
 
 
 class AppSensorAdm(UIBase):
@@ -722,16 +722,16 @@ class AppSensorAdm(UIBase):
         try:
             await api_req_limit.CheckHTTP(self)
             sid = await CheckRight(self)
-            self.render(rgw_consts.Node_TPL_NAMES.APP_ADM_SENSOR,
+            self.render(rgw_consts.TPL_NAMES.APP_ADM_SENSOR,
                         app_js_dir=g_vars.g_cfg['web']['js_dir'],
                         app_css_dir=g_vars.g_cfg['web']['css_dir'],
                         app_template_dir=g_vars.g_cfg['web']['template_dir'],
                         title=self.GetTitle(), sessionid=sid,
-                        edit_url=rgw_consts.Node_URLs.APP_EDIT_SENSOR[1:])
+                        edit_url=rgw_consts.URLs.APP_EDIT_SENSOR[1:])
         except models.AccessOverLimit:
             self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
         except models.NoRightError:
-            self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
+            self.redirect(rgw_consts.URLs.APP_ADM_LOGIN)
 
 
 class AppEditSwitch(UIBase):
@@ -745,7 +745,7 @@ class AppEditSwitch(UIBase):
             edit_mode = self.get_argument("edit_mode")
             if edit_mode == "edit":
                 rowid = self.get_argument("id")
-                self.render(rgw_consts.Node_TPL_NAMES.APP_EDIT_SWITCH,
+                self.render(rgw_consts.TPL_NAMES.APP_EDIT_SWITCH,
                             app_js_dir=g_vars.g_cfg['web']['js_dir'],
                             app_css_dir=g_vars.g_cfg['web']['css_dir'],
                             app_template_dir=g_vars.g_cfg['web']['template_dir'],
@@ -754,7 +754,7 @@ class AppEditSwitch(UIBase):
                             edit_mode=edit_mode,
                             iconid_tbls=self.GetIconTbls())
             else:
-                self.render(rgw_consts.Node_TPL_NAMES.APP_EDIT_SWITCH,
+                self.render(rgw_consts.TPL_NAMES.APP_EDIT_SWITCH,
                             app_js_dir=g_vars.g_cfg['web']['js_dir'],
                             app_css_dir=g_vars.g_cfg['web']['css_dir'],
                             app_template_dir=g_vars.g_cfg['web']['template_dir'],
@@ -765,7 +765,7 @@ class AppEditSwitch(UIBase):
         except models.AccessOverLimit:
             self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
         except models.NoRightError:
-            self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
+            self.redirect(rgw_consts.URLs.APP_ADM_LOGIN)
 
 
 class AppSwitchAdm(UIBase):
@@ -776,16 +776,16 @@ class AppSwitchAdm(UIBase):
         try:
             await api_req_limit.CheckHTTP(self)
             sid = await CheckRight(self)
-            self.render(rgw_consts.Node_TPL_NAMES.APP_ADM_SWITCH,
+            self.render(rgw_consts.TPL_NAMES.APP_ADM_SWITCH,
                         app_js_dir=g_vars.g_cfg['web']['js_dir'],
                         app_css_dir=g_vars.g_cfg['web']['css_dir'],
                         app_template_dir=g_vars.g_cfg['web']['template_dir'],
                         title=self.GetTitle(), sessionid=sid,
-                        edit_url=rgw_consts.Node_URLs.APP_EDIT_SWITCH[1:])
+                        edit_url=rgw_consts.URLs.APP_EDIT_SWITCH[1:])
         except models.AccessOverLimit:
             self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
         except models.NoRightError:
-            self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
+            self.redirect(rgw_consts.URLs.APP_ADM_LOGIN)
 
 
 class AppZbModuleAdm(UIBase):
@@ -796,18 +796,18 @@ class AppZbModuleAdm(UIBase):
         try:
             await api_req_limit.CheckHTTP(self)
             sid = await CheckRight(self)
-            self.render(rgw_consts.Node_TPL_NAMES.APP_ADM_ZB_MODULE,
+            self.render(rgw_consts.TPL_NAMES.APP_ADM_ZB_MODULE,
                         app_js_dir=g_vars.g_cfg['web']['js_dir'],
                         app_css_dir=g_vars.g_cfg['web']['css_dir'],
                         app_template_dir=g_vars.g_cfg['web']['template_dir'],
                         title=self.GetTitle(),
-                        sync_zb_dev_url=rgw_consts.Node_URLs.APP_SYNC_ZB_DEVICE[1:],
-                        restore_module_url=rgw_consts.Node_URLs.APP_RESTORE_ZB_MODULE[1:],
+                        sync_zb_dev_url=rgw_consts.URLs.APP_SYNC_ZB_DEVICE[1:],
+                        restore_module_url=rgw_consts.URLs.APP_RESTORE_ZB_MODULE[1:],
                         sessionid=sid)
         except models.AccessOverLimit:
             self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
         except models.NoRightError:
-            self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
+            self.redirect(rgw_consts.URLs.APP_ADM_LOGIN)
 
 
 class AppRestoreZbModule(UIBase):
@@ -819,7 +819,7 @@ class AppRestoreZbModule(UIBase):
             await api_req_limit.CheckHTTP(self)
             sid = await CheckRight(self)
             moduleid = self.get_argument("moduleid")
-            self.render(rgw_consts.Node_TPL_NAMES.APP_RESTORE_ZB_MODULE,
+            self.render(rgw_consts.TPL_NAMES.APP_RESTORE_ZB_MODULE,
                         app_js_dir=g_vars.g_cfg['web']['js_dir'],
                         app_css_dir=g_vars.g_cfg['web']['css_dir'],
                         app_template_dir=g_vars.g_cfg['web']['template_dir'],
@@ -829,7 +829,7 @@ class AppRestoreZbModule(UIBase):
         except models.AccessOverLimit:
             self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
         except models.NoRightError:
-            self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
+            self.redirect(rgw_consts.URLs.APP_ADM_LOGIN)
 
 
 class AppEditZbDevice(UIBase):
@@ -843,7 +843,7 @@ class AppEditZbDevice(UIBase):
             edit_mode = self.get_argument("edit_mode")
             if edit_mode == "edit":
                 deviceid = self.get_argument("deviceid")
-                self.render(rgw_consts.Node_TPL_NAMES.APP_EDIT_ZB_DEVICE,
+                self.render(rgw_consts.TPL_NAMES.APP_EDIT_ZB_DEVICE,
                             app_js_dir=g_vars.g_cfg['web']['js_dir'],
                             app_css_dir=g_vars.g_cfg['web']['css_dir'],
                             app_template_dir=g_vars.g_cfg['web']['template_dir'],
@@ -856,7 +856,7 @@ class AppEditZbDevice(UIBase):
         except models.AccessOverLimit:
             self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
         except models.NoRightError:
-            self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
+            self.redirect(rgw_consts.URLs.APP_ADM_LOGIN)
 
 
 class AppZbDeviceAdm(UIBase):
@@ -867,21 +867,21 @@ class AppZbDeviceAdm(UIBase):
         try:
             await api_req_limit.CheckHTTP(self)
             sid = await CheckRight(self)
-            self.render(rgw_consts.Node_TPL_NAMES.APP_ADM_ZB_DEVICE,
+            self.render(rgw_consts.TPL_NAMES.APP_ADM_ZB_DEVICE,
                         app_js_dir=g_vars.g_cfg['web']['js_dir'],
                         app_css_dir=g_vars.g_cfg['web']['css_dir'],
                         app_template_dir=g_vars.g_cfg['web']['template_dir'],
                         title=self.GetTitle(),
-                        edit_zb_dev_url=rgw_consts.Node_URLs.APP_EDIT_ZB_DEVICE[1:],
-                        recap_zb_dev_url=rgw_consts.Node_URLs.APP_RECAP_ZB_DEVICE[1:],
-                        op_log_url=rgw_consts.Node_URLs.APP_DEVICE_OP_LOG[1:],
-                        op_error_count_url=rgw_consts.Node_URLs.APP_DEVICE_OP_ERROR_COUNT[1:],
-                        zb_module_adm_url=rgw_consts.Node_URLs.APP_ADM_ZB_MODULE[1:],
+                        edit_zb_dev_url=rgw_consts.URLs.APP_EDIT_ZB_DEVICE[1:],
+                        recap_zb_dev_url=rgw_consts.URLs.APP_RECAP_ZB_DEVICE[1:],
+                        op_log_url=rgw_consts.URLs.APP_DEVICE_OP_LOG[1:],
+                        op_error_count_url=rgw_consts.URLs.APP_DEVICE_OP_ERROR_COUNT[1:],
+                        zb_module_adm_url=rgw_consts.URLs.APP_ADM_ZB_MODULE[1:],
                         sessionid=sid)
         except models.AccessOverLimit:
             self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
         except models.NoRightError:
-            self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
+            self.redirect(rgw_consts.URLs.APP_ADM_LOGIN)
 
 
 class AppSyncZbDevice(UIBase):
@@ -893,7 +893,7 @@ class AppSyncZbDevice(UIBase):
             await api_req_limit.CheckHTTP(self)
             sid = await CheckRight(self)
             moduleid = self.get_argument("moduleid")
-            self.render(rgw_consts.Node_TPL_NAMES.APP_SYNC_ZB_DEVICE,
+            self.render(rgw_consts.TPL_NAMES.APP_SYNC_ZB_DEVICE,
                         app_js_dir=g_vars.g_cfg['web']['js_dir'],
                         app_css_dir=g_vars.g_cfg['web']['css_dir'],
                         app_template_dir=g_vars.g_cfg['web']['template_dir'],
@@ -903,7 +903,7 @@ class AppSyncZbDevice(UIBase):
         except models.AccessOverLimit:
             self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
         except models.NoRightError:
-            self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
+            self.redirect(rgw_consts.URLs.APP_ADM_LOGIN)
 
 
 class AppRecapZbDevice(UIBase):
@@ -917,7 +917,7 @@ class AppRecapZbDevice(UIBase):
         try:
             await api_req_limit.CheckHTTP(self)
             sid = await CheckRight(self)
-            self.render(rgw_consts.Node_TPL_NAMES.APP_RECAP_ZB_DEVICE,
+            self.render(rgw_consts.TPL_NAMES.APP_RECAP_ZB_DEVICE,
                         app_js_dir=g_vars.g_cfg['web']['js_dir'],
                         app_css_dir=g_vars.g_cfg['web']['css_dir'],
                         app_template_dir=g_vars.g_cfg['web']['template_dir'],
@@ -927,7 +927,7 @@ class AppRecapZbDevice(UIBase):
         except models.AccessOverLimit:
             self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
         except models.NoRightError:
-            self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
+            self.redirect(rgw_consts.URLs.APP_ADM_LOGIN)
 
 
 class AppDeviceOpLog(UIBase):
@@ -936,7 +936,7 @@ class AppDeviceOpLog(UIBase):
             await api_req_limit.CheckHTTP(self)
             sid = await CheckRight(self)
             deviceid = self.get_argument("deviceid")
-            self.render(rgw_consts.Node_TPL_NAMES.APP_DEVICE_OP_LOG,
+            self.render(rgw_consts.TPL_NAMES.APP_DEVICE_OP_LOG,
                         app_js_dir=g_vars.g_cfg['web']['js_dir'],
                         app_css_dir=g_vars.g_cfg['web']['css_dir'],
                         app_template_dir=g_vars.g_cfg['web']['template_dir'],
@@ -946,7 +946,7 @@ class AppDeviceOpLog(UIBase):
         except models.AccessOverLimit:
             self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
         except models.NoRightError:
-            self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
+            self.redirect(rgw_consts.URLs.APP_ADM_LOGIN)
 
 
 class AppDeviceOpErrorCount(UIBase):
@@ -954,17 +954,17 @@ class AppDeviceOpErrorCount(UIBase):
         try:
             await api_req_limit.CheckHTTP(self)
             sid = await CheckRight(self)
-            self.render(rgw_consts.Node_TPL_NAMES.APP_DEVICE_OP_ERROR_COUNT,
+            self.render(rgw_consts.TPL_NAMES.APP_DEVICE_OP_ERROR_COUNT,
                         app_js_dir=g_vars.g_cfg['web']['js_dir'],
                         app_css_dir=g_vars.g_cfg['web']['css_dir'],
                         app_template_dir=g_vars.g_cfg['web']['template_dir'],
                         title="Device Op Error Count",
-                        op_log_url=rgw_consts.Node_URLs.APP_DEVICE_OP_LOG[1:],
+                        op_log_url=rgw_consts.URLs.APP_DEVICE_OP_LOG[1:],
                         sessionid=sid)
         except models.AccessOverLimit:
             self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
         except models.NoRightError:
-            self.redirect(rgw_consts.Node_URLs.APP_ADM_LOGIN)
+            self.redirect(rgw_consts.URLs.APP_ADM_LOGIN)
 
 
 class AppEditSensorTrigger(UIBase):
@@ -1031,7 +1031,7 @@ class AppEditSensorTrigger(UIBase):
             sensor_tbls = await self.GetSensorTbls()
             switch_tbls = await self.GetSwitchTbls()
             label_tbl = self.GetLabelTbl()[ulang]
-            self.render(rgw_consts.Node_TPL_NAMES.APP_EDIT_SENSOR_TRIGGER,
+            self.render(rgw_consts.TPL_NAMES.APP_EDIT_SENSOR_TRIGGER,
                         app_js_dir=g_vars.g_cfg['web']['js_dir'],
                         app_css_dir=g_vars.g_cfg['web']['css_dir'],
                         app_template_dir=g_vars.g_cfg['web']['template_dir'],
@@ -1045,7 +1045,7 @@ class AppEditSensorTrigger(UIBase):
         except models.AccessOverLimit:
             self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
         except models.NoRightError:
-            self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
+            self.redirect(rgw_consts.URLs.APP_EM_LOGIN)
 
 
 class AppAdmSensorTrigger(UIBase):
@@ -1068,18 +1068,18 @@ class AppAdmSensorTrigger(UIBase):
             sid = await CheckRight(self)
             ulang = GetLangCode(self)
             label_tbl = self.GetLabel()
-            self.render(rgw_consts.Node_TPL_NAMES.APP_ADM_SENSOR_TRIGGER,
+            self.render(rgw_consts.TPL_NAMES.APP_ADM_SENSOR_TRIGGER,
                         app_js_dir=g_vars.g_cfg['web']['js_dir'],
                         app_css_dir=g_vars.g_cfg['web']['css_dir'],
                         app_template_dir=g_vars.g_cfg['web']['template_dir'],
                         title=self.GetTitle(), sessionid=sid,
                         user_lang=ulang,
                         label_tbl=label_tbl[ulang],
-                        edit_action_url=rgw_consts.Node_URLs.APP_EDIT_SENSOR_TRIGGER[1:])
+                        edit_action_url=rgw_consts.URLs.APP_EDIT_SENSOR_TRIGGER[1:])
         except models.AccessOverLimit:
             self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
         except models.NoRightError:
-            self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
+            self.redirect(rgw_consts.URLs.APP_EM_LOGIN)
 
 
 class Logout(UIBase):
@@ -1097,7 +1097,7 @@ class Logout(UIBase):
         except models.AccessOverLimit:
             self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
         except models.NoRightError:
-            self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
+            self.redirect(rgw_consts.URLs.APP_EM_LOGIN)
 
     async def async_post(self):
         try:
@@ -1106,4 +1106,4 @@ class Logout(UIBase):
         except models.AccessOverLimit:
             self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
         except models.NoRightError:
-            self.redirect(rgw_consts.Node_URLs.APP_EM_LOGIN)
+            self.redirect(rgw_consts.URLs.APP_EM_LOGIN)

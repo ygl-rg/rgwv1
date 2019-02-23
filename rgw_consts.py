@@ -72,7 +72,7 @@ class XY_DeviceNo:
             XY_LIQUID_LEVEL_SENSOR, XY_SOIL_3IN1_SENSOR, XY_CO2_SENSOR]
 
 
-class Node_URLs:
+class URLs:
     APP_LOGOUT = r"logout"
     APP_ADM_LOGIN = r"adm/login"
     APP_EM_LOGIN = r"login"
@@ -112,7 +112,7 @@ class Node_URLs:
     EXPORT_FMT = "export/{0}"
 
 
-class Node_TPL_NAMES:
+class TPL_NAMES:
     APP_LOGIN = r"app_login_tpl.html"
     APP_ADM_LOGIN = r"app_adm_login_tpl.html"
     APP_EDIT_USER = r"app_edit_user_tpl.html"

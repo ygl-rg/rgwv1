@@ -16,11 +16,11 @@ def InitWebService():
 
 
 def UpdateConsts():
-    for k in rgw_consts.Node_URLs.__dict__:
+    for k in rgw_consts.URLs.__dict__:
         if k.find('__') < 0:
             if k not in ('EXPORT_FMT', ):
-                setattr(rgw_consts.Node_URLs, k,
-                        os_path.join(g_vars.g_cfg['app_url_prefix'], rgw_consts.Node_URLs.__dict__[k]))
+                setattr(rgw_consts.URLs, k,
+                        os_path.join(g_vars.g_cfg['app_url_prefix'], rgw_consts.URLs.__dict__[k]))
 
     for k in rgw_consts.Keys.__dict__:
         if k.find('__') < 0:

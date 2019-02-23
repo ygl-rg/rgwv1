@@ -25,31 +25,31 @@ class JsHandler(AbstractHandler):
     def initialize(self, **kwargs):
         self.tpl_param_tbl = {
             'em_rpc.js': {
-                'url': rgw_consts.Node_URLs.API_EM
+                'url': rgw_consts.URLs.API_EM
             },
 
             'sys_cfg_rpc.js': {
-                'url': rgw_consts.Node_URLs.API_SYS_CFG
+                'url': rgw_consts.URLs.API_SYS_CFG
             },
 
             'sensor_rpc.js': {
-                'url': rgw_consts.Node_URLs.API_SENSOR_ADM
+                'url': rgw_consts.URLs.API_SENSOR_ADM
             },
 
             'switch_rpc.js': {
-                'url': rgw_consts.Node_URLs.API_SWITCH_ADM
+                'url': rgw_consts.URLs.API_SWITCH_ADM
             },
 
             'sensor_trigger_rpc.js': {
-                'url': rgw_consts.Node_URLs.API_SENSOR_TRIGGER
+                'url': rgw_consts.URLs.API_SENSOR_TRIGGER
             },
 
             'zb_module_rpc.js': {
-                'url': rgw_consts.Node_URLs.API_ZB_MODULE_ADM
+                'url': rgw_consts.URLs.API_ZB_MODULE_ADM
             },
 
             'zb_device_rpc.js': {
-                'url': rgw_consts.Node_URLs.API_ZB_DEVICE_ADM
+                'url': rgw_consts.URLs.API_ZB_DEVICE_ADM
             }
         }
 
