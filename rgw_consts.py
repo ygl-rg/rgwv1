@@ -124,9 +124,7 @@ class Node_TPL_NAMES:
     VIEW_SENSORS_RECENT_TREND = r'view_sensors_recent_trend2_tpl.html'
     VIEW_SWITCH_MONTHLY_USAGE = r"view_monthly_switch_usage_tpl.html"
     APP_EM = r"app_em_tpl.html"
-    APP_EM_MOBILE = r"app_em_mobile_tpl.html"
-    APP_EM_SENSOR = r"app_em_sensor2_tpl.html"
-    APP_EM_SENSOR_MOBILE = r"app_em_sensor_mobile_tpl.html"
+    APP_EM_SENSOR = r"app_em_sensor_tpl.html"
     APP_SYS_CFG = r'app_sys_cfg_tpl.html'
     APP_SYS_CFG_MOBILE = r'app_sys_cfg2_tpl.html'
     APP_EDIT_SENSOR = r'app_edit_sensor_tpl.html'
