@@ -5,7 +5,7 @@ from os import path as os_path
 import collections
 import rg_lib
 import rgw_consts
-import node_models as models
+import models
 import api_core
 import api_req_limit
 import api_auth

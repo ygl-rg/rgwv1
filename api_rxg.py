@@ -3,7 +3,7 @@ from twisted.internet import error, defer
 import treq
 import rg_lib
 import api_core
-import node_models as models
+import models
 
 
 async def Req(rpc_no, method, params, timeout):

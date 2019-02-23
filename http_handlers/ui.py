@@ -9,7 +9,7 @@ import multi_lang
 import api_core
 import api_req_limit
 import api_auth
-import node_models as models
+import models
 import g_vars
 
 
@@ -25,16 +25,6 @@ class UIBase(cyclone_web.RequestHandler):
 
     def post(self):
         return defer.ensureDeferred(self.async_post())
-
-
-def DetectLoginPortal(req_handler):
-    portal = req_handler.get_argument('loginportal', 'login')
-    if portal == 'login':
-        return rgw_consts.Node_URLs.APP_EM_LOGIN
-    elif portal == 'login2':
-        return rgw_consts.Node_URLs.APP_EM_LOGIN
-    else:
-        raise cyclone_web.HTTPError(404)
 
 
 def GetToken(req_handler):
@@ -206,9 +196,22 @@ class ViewSwitchSchedule(UIBase):
 
     def GetLabel(self):
         return {
-            "en": {"remove": "remove", 'valid': "valid schedules", 'invalid': 'overdue schedules'},
-            "zh-cn": {"remove": "删除", 'valid': "有效排程", 'invalid': "过期排程"},
-            'zh-tw': {"remove": "移除", 'valid': "有效排程", 'invalid': "過期排程"}
+            "en": {"remove": "remove", 'valid': "valid schedules", 'invalid': 'overdue schedules',
+                   'start_date': 'Start Date', 'stop_date': 'End Date', 'time': 'Time', 'working_duration': 'Working Duration',
+                   'switches': 'Switches', 'next_schedule_time': 'Next Schedule Time',
+                   'timezone': 'Timezone'},
+            "zh-cn": {"remove": "删除", 'valid': "有效排程", 'invalid': "过期排程",
+                      'start_date': '开始', 'stop_date': '结束', 'time': '时间',
+                      'working_duration': '工作时长',
+                      'switches': '开关', 'next_schedule_time': '下次排程',
+                      'timezone': '时区'
+                      },
+            'zh-tw': {"remove": "移除", 'valid': "有效排程", 'invalid': "過期排程",
+                      'start_date': '開始', 'stop_date': '結束', 'time': '時間',
+                      'working_duration': '工作時長',
+                      'switches': '開關', 'next_schedule_time': '下次排程',
+                      'timezone': '時區'
+                      }
         }
 
     async def handlePage_(self):
@@ -223,9 +226,7 @@ class ViewSwitchSchedule(UIBase):
                         app_template_dir=g_vars.g_cfg['web']['template_dir'],
                         title=self.GetTitle(),
                         sessionid=sid, user_lang=ulang,
-                        valid_label=label_tbl['valid'],
-                        invalid_label=label_tbl['invalid'],
-                        remove_label=label_tbl['remove'])
+                        label_tbl=label_tbl)
         except models.AccessOverLimit:
             self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
         except models.NoRightError:
@@ -339,9 +340,16 @@ class ViewSwitchOnLogDetail(UIBase):
 
     def GetLabel(self):
         return {
-            "en": {"remove": "remove", "refresh": "refresh", "query": "query"},
-            "zh-cn": {"remove": "删除", "refresh": "刷新", "query": "查询"},
-            "zh-tw": {"remove": "删除", "refresh": "刷新", "query": "查詢"}
+            "en": {"monthly": "monthly", "range": "range", "query": "query",
+                   'switch_on_duration': 'Switch On Duration', 'start': 'Start',
+                   'stop': 'End', 'date': 'Date'},
+            "zh-cn": {"monthly": "月份", "range": "范围", "query": "查询",
+                      'switch_on_duration': '开启时长', 'start': '开始',
+                      'stop': '结束', 'date': '日期'
+                      },
+            "zh-tw": {"monthly": "月份", "range": "范围", "query": "查詢",
+                      'switch_on_duration': '開啟時長', 'start': '開始',
+                      'stop': '結束', 'date': '日期'}
         }
 
     async def handlePage_(self):
@@ -364,7 +372,7 @@ class ViewSwitchOnLogDetail(UIBase):
                         sessionid=sid, user_lang=ulang,
                         switchid=temp,
                         switch_name=row.get('name', ''),
-                        query_btn_label=label_tbl['query'])
+                        label_tbl=label_tbl)
         except models.AccessOverLimit:
             self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
         except models.NoRightError:
@@ -430,8 +438,7 @@ class ViewSensorRecentTrend(UIBase):
                             sensorids=sensorids,
                             hours_tbls=self.GetHoursTbls(),
                             mins_interval_tbls=self.GetMinsInterval(),
-                            hours_label=label_tbl['hours'],
-                            minutes_label=label_tbl['minutes'],
+                            label_tbl=label_tbl,
                             plotting_no=plotting_no,
                             sensor_recent_hours_plotting_url=rgw_consts.Node_URLs.VIEW_RECENT_HOURS_SENSOR_DATA_PLOTTING[
                                                              1:])
@@ -473,7 +480,7 @@ class ViewMonthlySwitchUsage(UIBase):
                         title=self.GetTitle(),
                         sessionid=sid, user_lang=ulang,
                         switch_on_detail_url=rgw_consts.Node_URLs.VIEW_SWITCH_ON_LOG_DETAIL[1:],
-                        export_label=label_tbl['export'])
+                        label_tbl=label_tbl)
         except models.AccessOverLimit:
             self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
         except models.NoRightError:
@@ -493,20 +500,23 @@ class AppEm(UIBase):
                    'set_schedule': "set schedule",
                    'switch_schedule_view': "view schedule",
                    'set_cond_action_view': 'set action condition',
-                   'switch_on_log_detail_view': "switch monthly usage",
-                   'goto': 'env data'},
+                   'monthly_switch_usage_view': "switch monthly usage",
+                   'goto': 'env data',
+                   'name': 'Name', 'status': 'Status', 'remaining': 'Remaining'},
             "zh-cn": {"open": "打开", "close": "关闭", "open_duration_desc": "15-99999秒",
                       'set_schedule': "设置排程",
                       'switch_schedule_view': "查看排程",
                       'set_cond_action_view': '设置条件触发',
-                      'switch_on_log_detail_view': "开关月统计",
-                      'goto': '环境数据'},
+                      'monthly_switch_usage_view': "开关月统计",
+                      'goto': '环境数据',
+                      'name': '名字', 'status': '状态', 'remaining': '剩余开启时长'},
             "zh-tw": {"open": "打開", "close": "關閉", "open_duration_desc": "15-99999秒",
                       'set_schedule': "设置排程",
                       'switch_schedule_view': "查看排程",
                       'set_cond_action_view': '設置條件觸發',
-                      'switch_on_log_detail_view': "開關月統計",
-                      'goto': '環境數據'}
+                      'monthly_switch_usage_view': "開關月統計",
+                      'goto': '環境數據',
+                      'name': '名字', 'status': '狀態', 'remaining': '剩餘開啟時長'}
         }
 
     async def handlePage_(self):
@@ -520,18 +530,13 @@ class AppEm(UIBase):
                         app_css_dir=g_vars.g_cfg['web']['css_dir'],
                         app_template_dir=g_vars.g_cfg['web']['template_dir'],
                         title=self.GetTitle(),
-                        sessionid=sid, user_lang=ulang, open_valve_label=label_tbl['open'],
-                        close_valve_label=label_tbl['close'],
-                        open_duration_label=label_tbl['open_duration_desc'],
+                        sessionid=sid,
+                        user_lang=ulang,
+                        label_tbl=label_tbl,
                         switch_schedule_view_url=rgw_consts.Node_URLs.VIEW_SWITCH_SCHEDULES[1:],
-                        switch_schedule_view_label=label_tbl['switch_schedule_view'],
-                        set_schedule_label=label_tbl['set_schedule'],
-                        set_cond_action_view_label=label_tbl['set_cond_action_view'],
-                        view_monthly_switch_usage_label=label_tbl['switch_on_log_detail_view'],
                         view_monthly_switch_usage_url=rgw_consts.Node_URLs.VIEW_MONTHLY_SWITCH_USAGE[1:],
                         set_sensor_trigger_view_url=rgw_consts.Node_URLs.APP_ADM_SENSOR_TRIGGER[1:],
-                        em_sensor_url=rgw_consts.Node_URLs.APP_EM_SENSOR[1:],
-                        goto_label=label_tbl['goto'])
+                        em_sensor_url=rgw_consts.Node_URLs.APP_EM_SENSOR[1:])
         except models.AccessOverLimit:
             self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)
         except models.NoRightError:
@@ -549,14 +554,17 @@ class AppEmSensor(UIBase):
         return {
             "en": {'history_trend_url': 'history trend',
                    'history_data_url': 'history data',
-                   'goto': 'env ctrl', 'plot1': 'plot1', 'plot2': 'plot2'},
+                   'goto': 'env ctrl', 'plot1': 'plot1', 'plot2': 'plot2',
+                   'name': 'Name', 'status': 'Status', 'time': 'Time'},
 
             "zh-cn": {'history_trend_url': '历史趋势',
                       'history_data_url': '历史数据',
-                      'goto': '环境控制', 'plot1': '趋势图1', 'plot2': '趋势图2'},
+                      'goto': '环境控制', 'plot1': '趋势图1', 'plot2': '趋势图2',
+                      'name': '名字', 'status': '状态', 'time': '时间'},
             "zh-tw": {'history_trend_url': '歷史趨勢',
                       'history_data_url': '歷史數據',
-                      'goto': '环境控制', 'plot1': '趨勢图1', 'plot2': '趨勢图2'}
+                      'goto': '环境控制', 'plot1': '趨勢图1', 'plot2': '趨勢图2',
+                      'name': '名字', 'status': '狀態', 'time': '時間'}
         }
 
     async def handlePage_(self):
@@ -571,10 +579,10 @@ class AppEmSensor(UIBase):
                         app_template_dir=g_vars.g_cfg['web']['template_dir'],
                         title=self.GetTitle(),
                         sessionid=sid, user_lang=ulang,
+                        label_tbl=label_tbl,
                         sensor_mins_avg_trend_url=rgw_consts.Node_URLs.VIEW_SENSOR_MINS_AVG_TREND[1:],
                         sensor_mins_avg_data_url=rgw_consts.Node_URLs.VIEW_SENSOR_MINS_AVG_DATA[1:],
-                        sensor_recent_hours_plotting_url=rgw_consts.Node_URLs.VIEW_RECENT_HOURS_SENSOR_DATA_PLOTTING[
-                                                         1:],
+                        sensor_recent_hours_plotting_url=rgw_consts.Node_URLs.VIEW_RECENT_HOURS_SENSOR_DATA_PLOTTING[1:],
                         sensor_recent_trend_url=rgw_consts.Node_URLs.VIEW_SENSORS_RECENT_TREND[1:],
                         em_url=rgw_consts.Node_URLs.APP_EM[1:],
                         goto_label=label_tbl['goto'],
@@ -661,14 +669,7 @@ class AppSysCfgMobile(UIBase):
                         app_template_dir=g_vars.g_cfg['web']['template_dir'],
                         tz_options=self.GetTimezoneOpts(),
                         title="Sys Config", sessionid=sid,
-                        register=label_tbl['register'],
-                        sync=label_tbl['sync'],
-                        save=label_tbl['save'],
-                        restart=label_tbl['restart'],
-                        reboot=label_tbl['reboot'],
-                        timezone=label_tbl['timezone'],
-                        password=label_tbl['password'],
-                        email_sender=label_tbl['email_sender'],
+                        label_tbl=label_tbl,
                         user_lang=ulang)
         except models.AccessOverLimit:
             self.finish(rgw_consts.WebContent.ACCESS_OVER_LIMIT)

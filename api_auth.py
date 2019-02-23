@@ -1,7 +1,7 @@
 import json
 import rgw_consts
 import api_core
-import node_models as models
+import models
 
 
 async def Add(pwd):

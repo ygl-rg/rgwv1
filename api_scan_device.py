@@ -5,7 +5,7 @@ import api_core
 import api_sensor_data
 import api_switch_action
 import api_rxg
-import node_models as models
+import models
 
 
 def ListSensor():

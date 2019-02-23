@@ -1,6 +1,6 @@
 import sqlite3
 import rg_lib
-import node_models
+import models
 
 
 def SetPassword(connid):
@@ -30,7 +30,7 @@ def main(db_path):
         conn.conn_obj.execute("PRAGMA synchronous=1")
     with rg_lib.DbConnWrap(sqlite3.connect(db_path, check_same_thread=False)) as conn:
         conn.conn_obj.execute("drop table if exists rgw_sys_cfg")
-        conn.conn_obj.execute(rg_lib.Sqlite.CreateTable(node_models.SysCfg.TBL, node_models.SysCfg.TBL_FIELDS))
+        conn.conn_obj.execute(rg_lib.Sqlite.CreateTable(models.SysCfg.TBL, models.SysCfg.TBL_FIELDS))
         SetPagekite(conn.conn_obj)
         SetEmailSender(conn.conn_obj)
         SetRXG(conn.conn_obj)

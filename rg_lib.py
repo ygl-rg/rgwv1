@@ -90,6 +90,7 @@ class TempFileHandler(cyclone_web.StaticFileHandler):
     """
     cache file for 60 seconds only
     """
+
     def get_cache_time(self, path, modified, mime_type):
         return 60
 
@@ -110,10 +111,10 @@ class AsyncDynFuncHandler(BaseRpcHandler):
             jsonid = req["id"]
             method = req["method"]
             assert isinstance(method, str), \
-                              "Invalid method type: %s" % type(method)
+                "Invalid method type: %s" % type(method)
             params = req.get("params", [])
             assert isinstance(params, (list, tuple)), \
-                              "Invalid params type: %s" % type(params)
+                "Invalid params type: %s" % type(params)
         except Exception as e:
             log.msg("Bad Request: %s" % str(e))
             raise cyclone_web.HTTPError(400)
@@ -193,6 +194,7 @@ class Sqlite:
             else:
                 temp = bytes_obj if bytes_obj is not None else b''
             return base64.b64encode(temp)
+
         conn_obj.create_function('b64encode', 1, __helper)
 
     @classmethod
@@ -212,11 +214,11 @@ class Sqlite:
 
     @classmethod
     def GenInClause(cls, count):
-        return "("+",".join(["?" for _ in range(count)])+")"
+        return "(" + ",".join(["?" for _ in range(count)]) + ")"
 
     @classmethod
     def GenInSql(cls, sql_prefix, seq):
-        return sql_prefix+cls.GenInClause(len(seq))
+        return sql_prefix + cls.GenInClause(len(seq))
 
     @classmethod
     def FilterArgs(cls, args):
@@ -237,7 +239,7 @@ class Sqlite:
         field_str = ',\n'.join([u"{0} {1}".format(i['name'], i['type']) for i in fields])
         sql += field_str
         if len(extra_arg) > 0:
-            sql += ',\n'+extra_arg
+            sql += ',\n' + extra_arg
         sql += ')'
         return sql
 
@@ -248,6 +250,7 @@ class Sqlite:
             sql_row = sql_rows[0]
             args = cls.FilterArgs(sql_row[1]) if len(sql_row) > 1 else []
             return [cls.FilterRow(r) for r in conn_obj.execute(sql_row[0], args)]
+
         return conn_pool_obj.runWithConnection(__helper)
 
     @classmethod
@@ -270,6 +273,7 @@ class Sqlite:
                 raise RGError(ErrorType.SqliteIntegrityError())
             except Exception as e:
                 raise e
+
         return __run()
 
     @classmethod
@@ -282,6 +286,7 @@ class Sqlite:
                 raise RGError(ErrorType.SqliteIntegrityError())
             except Exception as e:
                 raise e
+
         return __run()
 
 
@@ -419,7 +424,7 @@ class DateTime:
     @classmethod
     def ts2excel(cls, ts_val):
         int_part = int(ts_val) // cls.DAY_SECONDS + cls.DAYS_BETWEEN_1970_1900
-        percentage = 1.0 * (int(ts_val) % cls.DAY_SECONDS)/cls.DAY_SECONDS
+        percentage = 1.0 * (int(ts_val) % cls.DAY_SECONDS) / cls.DAY_SECONDS
         return int_part + percentage
 
     @classmethod

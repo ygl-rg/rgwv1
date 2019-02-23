@@ -10,8 +10,6 @@ cfg_tbl = {
 
     "http_port": 8001,
 
-    'app_url_prefix': '/rgw/',
-
     "redis": {
         "host": "localhost",
         "port": 21999

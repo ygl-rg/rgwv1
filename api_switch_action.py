@@ -1,6 +1,6 @@
 from twisted.internet import defer
 from twisted.python import log
-import node_models as models
+import models
 import rg_lib
 import api_core
 import api_rxg

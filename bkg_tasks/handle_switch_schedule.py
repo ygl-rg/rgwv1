@@ -1,7 +1,7 @@
 import rg_lib
 import api_core
 import api_switch_action
-import node_models as models
+import models
 
 
 async def RunTask(schedule_mdl, dt_obj):

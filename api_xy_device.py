@@ -2,7 +2,7 @@ from twisted.python import log
 import api_core
 import api_rxg
 import rg_lib
-import node_models as models
+import models
 import rgw_consts
 
 

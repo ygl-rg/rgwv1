@@ -81,7 +81,7 @@ class SwitchSchedule:
     def Init(cls, conn_obj):
         conn_obj.execute(rg_lib.Sqlite.CreateTable(cls.TBL1, cls.TBL1_FIELDS))
         conn_obj.execute(rg_lib.Sqlite.CreateTable(cls.TBL2, cls.TBL2_FIELDS,
-                                                      'primary key(scheduleid, switchid)'))
+                                                   'primary key(scheduleid, switchid)'))
         conn_obj.execute(cls.IDX1)
         conn_obj.execute(cls.IDX2)
 
@@ -665,7 +665,7 @@ class SensorData:
     @classmethod
     def Init(cls, conn_obj):
         conn_obj.execute(rg_lib.Sqlite.CreateTable(cls.TBL, cls.TBL_FIELDS,
-                                                      'PRIMARY key(sensorid, cts)'))
+                                                   'PRIMARY key(sensorid, cts)'))
         conn_obj.execute(cls.IDX1)
 
     @classmethod

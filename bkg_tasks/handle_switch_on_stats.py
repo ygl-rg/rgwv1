@@ -1,6 +1,6 @@
 from twisted.python import log
 import rg_lib
-import node_models as models
+import models
 import api_core
 import api_switch_action
 import api_switch_stats

@@ -1,7 +1,7 @@
 import rgw_consts
 import rg_lib
 import api_core
-import node_models as models
+import models
 
 
 def MinuteKey(datetime_obj):

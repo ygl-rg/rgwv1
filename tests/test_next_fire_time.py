@@ -1,6 +1,6 @@
 import datetime
 import pytest
-import node_models as models
+import models
 
 
 @pytest.mark.skipif(False, reason='')

@@ -3,7 +3,7 @@ from twisted.internet import defer, error
 import txredisapi
 import treq
 import rg_lib
-import node_models as models
+import models
 import rgw_consts
 
 
