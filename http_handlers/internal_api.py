@@ -22,7 +22,7 @@ class EnvMonitor(Base):
                          "CloseSwitch": functools.partial(em_api.CloseSwitch, self),
                          'GetSwitch': functools.partial(em_api.GetSwitch, self),
                          'AddSchedule': functools.partial(em_api.AddSchedule, self),
-                         'GetUserSchedules': functools.partial(em_api.GetUserSchedules, self),
+                         'ListSchedule': functools.partial(em_api.ListSchedule, self),
                          'RemoveSchedule': functools.partial(em_api.RemoveSchedule, self),
                          'GetSensor': functools.partial(em_api.GetSensor, self),
                          'FindSensorMinsAvgLog': functools.partial(em_api.FindSensorMinsAvgLog, self),
