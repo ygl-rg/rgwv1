@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 LimitNOFILE=20000
-ExecStart=/usr/bin/python3 /home/pi/rgwv1/__main__.py rgw_node
+ExecStart=/usr/bin/python3 /home/pi/rgwv1/run_rgw.py
 Restart=always
 
 [Install]
