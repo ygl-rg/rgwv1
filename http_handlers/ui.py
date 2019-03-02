@@ -10,7 +10,7 @@ import api_core
 import api_req_limit
 import api_auth
 import models
-import g_vars
+import settings
 
 
 class UIBase(cyclone_web.RequestHandler):
@@ -63,12 +63,12 @@ class AppAdmLogin(UIBase):
 
     def RenderPage(self, user_lang, hint):
         self.render(rgw_consts.TPL_NAMES.APP_ADM_LOGIN,
-                    app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                    app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                    app_js_dir=settings.WEB['js_dir'],
+                    app_template_dir=settings.WEB['template_dir'],
                     title="rgw adm",
                     hint=hint,
                     loginurl=rgw_consts.URLs.APP_ADM_LOGIN,
-                    bkgpng=g_vars.g_cfg['web']['login_page_bkg'],
+                    bkgpng=settings.WEB['login_page_bkg'],
                     user_lang=user_lang,
                     adm_types=self.adm_types)
 
@@ -112,10 +112,10 @@ class AppLoginBase(UIBase):
         ulang = GetLangCode(self)
         app_opts = self.GetAppOptions()[ulang]
         self.render(rgw_consts.TPL_NAMES.APP_LOGIN,
-                    app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                    app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                    app_js_dir=settings.WEB['js_dir'],
+                    app_template_dir=settings.WEB['template_dir'],
                     title=self.GetTitle(),
-                    hint=hint_str, loginurl=self.GetLoginUrl(), bkgpng=g_vars.g_cfg['web']['login_page_bkg'],
+                    hint=hint_str, loginurl=self.GetLoginUrl(), bkgpng=settings.WEB['login_page_bkg'],
                     user_lang=ulang, lang_options=self.GetLangOptions(), app_options=app_opts)
 
     def GetLangOptions(self):
@@ -221,9 +221,9 @@ class ViewSwitchSchedule(UIBase):
             ulang = GetLangCode(self)
             label_tbl = self.GetLabel()[ulang]
             self.render(rgw_consts.TPL_NAMES.VIEW_SWITCH_SCHEDULES,
-                        app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                        app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                        app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                        app_js_dir=settings.WEB['js_dir'],
+                        app_css_dir=settings.WEB['css_dir'],
+                        app_template_dir=settings.WEB['template_dir'],
                         title=self.GetTitle(),
                         sessionid=sid, user_lang=ulang,
                         label_tbl=label_tbl)
@@ -265,9 +265,9 @@ class ViewSensorMinsAvgTrend(UIBase):
             sensors = await api_core.BizDB.Query([sql_str, sensorids])
             if len(sensors) > 0:
                 self.render(rgw_consts.TPL_NAMES.VIEW_SENSOR_MINS_AVG_TREND,
-                            app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                            app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                            app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                            app_js_dir=settings.WEB['js_dir'],
+                            app_css_dir=settings.WEB['css_dir'],
+                            app_template_dir=settings.WEB['template_dir'],
                             title=self.GetTitle(),
                             sessionid=sid, user_lang=ulang,
                             sensorids=sensorids,
@@ -315,9 +315,9 @@ class ViewSensorMinsAvgData(UIBase):
             sensors_tbl = {i['id']: i for i in sensors}
             if len(sensors) > 0:
                 self.render(rgw_consts.TPL_NAMES.VIEW_SENSOR_MINS_AVG_DATA,
-                            app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                            app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                            app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                            app_js_dir=settings.WEB['js_dir'],
+                            app_css_dir=settings.WEB['css_dir'],
+                            app_template_dir=settings.WEB['template_dir'],
                             title=self.GetTitle(),
                             sessionid=sid, user_lang=ulang,
                             sensorids=sensorids,
@@ -365,9 +365,9 @@ class ViewSwitchOnLogDetail(UIBase):
                 raise cyclone_web.HTTPError(404, 'no switch')
             label_tbl = self.GetLabel()[ulang]
             self.render(rgw_consts.TPL_NAMES.VIEW_SWITCH_ON_LOG_DETAIL,
-                        app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                        app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                        app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                        app_js_dir=settings.WEB['js_dir'],
+                        app_css_dir=settings.WEB['css_dir'],
+                        app_template_dir=settings.WEB['template_dir'],
                         title=self.GetTitle(),
                         sessionid=sid, user_lang=ulang,
                         switchid=temp,
@@ -430,9 +430,9 @@ class ViewSensorRecentTrend(UIBase):
             if len(sensors) > 0:
                 label_tbl = self.GetLabelTbl()[ulang]
                 self.render(rgw_consts.TPL_NAMES.VIEW_SENSORS_RECENT_TREND,
-                            app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                            app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                            app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                            app_js_dir=settings.WEB['js_dir'],
+                            app_css_dir=settings.WEB['css_dir'],
+                            app_template_dir=settings.WEB['template_dir'],
                             title=self.GetTitle(),
                             sessionid=sid, user_lang=ulang,
                             sensorids=sensorids,
@@ -474,9 +474,9 @@ class ViewMonthlySwitchUsage(UIBase):
             ulang = GetLangCode(self)
             label_tbl = self.GetLabel()[ulang]
             self.render(rgw_consts.TPL_NAMES.VIEW_SWITCH_MONTHLY_USAGE,
-                        app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                        app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                        app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                        app_js_dir=settings.WEB['js_dir'],
+                        app_css_dir=settings.WEB['css_dir'],
+                        app_template_dir=settings.WEB['template_dir'],
                         title=self.GetTitle(),
                         sessionid=sid, user_lang=ulang,
                         switch_on_detail_url=rgw_consts.URLs.VIEW_SWITCH_ON_LOG_DETAIL[1:],
@@ -526,9 +526,9 @@ class AppEm(UIBase):
             ulang = GetLangCode(self)
             label_tbl = self.GetLabel()[ulang]
             self.render(rgw_consts.TPL_NAMES.APP_EM,
-                        app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                        app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                        app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                        app_js_dir=settings.WEB['js_dir'],
+                        app_css_dir=settings.WEB['css_dir'],
+                        app_template_dir=settings.WEB['template_dir'],
                         title=self.GetTitle(),
                         sessionid=sid,
                         user_lang=ulang,
@@ -574,9 +574,9 @@ class AppEmSensor(UIBase):
             ulang = GetLangCode(self)
             label_tbl = self.GetLabel()[ulang]
             self.render(rgw_consts.TPL_NAMES.APP_EM_SENSOR,
-                        app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                        app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                        app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                        app_js_dir=settings.WEB['js_dir'],
+                        app_css_dir=settings.WEB['css_dir'],
+                        app_template_dir=settings.WEB['template_dir'],
                         title=self.GetTitle(),
                         sessionid=sid, user_lang=ulang,
                         label_tbl=label_tbl,
@@ -610,9 +610,9 @@ class AppSysCfg(UIBase):
             await api_req_limit.CheckHTTP(self)
             sid = await CheckRight(self)
             self.render(rgw_consts.TPL_NAMES.APP_SYS_CFG,
-                        app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                        app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                        app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                        app_js_dir=settings.WEB['js_dir'],
+                        app_css_dir=settings.WEB['css_dir'],
+                        app_template_dir=settings.WEB['template_dir'],
                         tz_options=self.GetTimezoneOpts(),
                         title="Sys Config", sessionid=sid)
         except models.AccessOverLimit:
@@ -664,9 +664,9 @@ class AppSysCfgMobile(UIBase):
             ulang = GetLangCode(self)
             label_tbl = self.GetLabel()[ulang]
             self.render(rgw_consts.TPL_NAMES.APP_SYS_CFG_MOBILE,
-                        app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                        app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                        app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                        app_js_dir=settings.WEB['js_dir'],
+                        app_css_dir=settings.WEB['css_dir'],
+                        app_template_dir=settings.WEB['template_dir'],
                         tz_options=self.GetTimezoneOpts(),
                         title="Sys Config", sessionid=sid,
                         label_tbl=label_tbl,
@@ -692,18 +692,18 @@ class AppEditSensor(UIBase):
             if edit_mode == "edit":
                 rowid = self.get_argument("id")
                 self.render(rgw_consts.TPL_NAMES.APP_EDIT_SENSOR,
-                            app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                            app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                            app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                            app_js_dir=settings.WEB['js_dir'],
+                            app_css_dir=settings.WEB['css_dir'],
+                            app_template_dir=settings.WEB['template_dir'],
                             title="Edit Sensor", sessionid=sid,
                             id=rowid, edit_mode=edit_mode,
                             data_no_tbls=self.GetDataNoTbls(),
                             iconid_tbls=self.GetIconTbls())
             else:
                 self.render(rgw_consts.TPL_NAMES.APP_EDIT_SENSOR,
-                            app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                            app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                            app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                            app_js_dir=settings.WEB['js_dir'],
+                            app_css_dir=settings.WEB['css_dir'],
+                            app_template_dir=settings.WEB['template_dir'],
                             title="Add Sensor", sessionid=sid,
                             id=0, edit_mode=edit_mode,
                             data_no_tbls=self.GetDataNoTbls(),
@@ -723,9 +723,9 @@ class AppSensorAdm(UIBase):
             await api_req_limit.CheckHTTP(self)
             sid = await CheckRight(self)
             self.render(rgw_consts.TPL_NAMES.APP_ADM_SENSOR,
-                        app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                        app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                        app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                        app_js_dir=settings.WEB['js_dir'],
+                        app_css_dir=settings.WEB['css_dir'],
+                        app_template_dir=settings.WEB['template_dir'],
                         title=self.GetTitle(), sessionid=sid,
                         edit_url=rgw_consts.URLs.APP_EDIT_SENSOR[1:])
         except models.AccessOverLimit:
@@ -746,18 +746,18 @@ class AppEditSwitch(UIBase):
             if edit_mode == "edit":
                 rowid = self.get_argument("id")
                 self.render(rgw_consts.TPL_NAMES.APP_EDIT_SWITCH,
-                            app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                            app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                            app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                            app_js_dir=settings.WEB['js_dir'],
+                            app_css_dir=settings.WEB['css_dir'],
+                            app_template_dir=settings.WEB['template_dir'],
                             title="Edit Switch", sessionid=sid,
                             id=rowid,
                             edit_mode=edit_mode,
                             iconid_tbls=self.GetIconTbls())
             else:
                 self.render(rgw_consts.TPL_NAMES.APP_EDIT_SWITCH,
-                            app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                            app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                            app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                            app_js_dir=settings.WEB['js_dir'],
+                            app_css_dir=settings.WEB['css_dir'],
+                            app_template_dir=settings.WEB['template_dir'],
                             title="Add Switch", sessionid=sid,
                             id='',
                             edit_mode=edit_mode,
@@ -777,9 +777,9 @@ class AppSwitchAdm(UIBase):
             await api_req_limit.CheckHTTP(self)
             sid = await CheckRight(self)
             self.render(rgw_consts.TPL_NAMES.APP_ADM_SWITCH,
-                        app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                        app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                        app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                        app_js_dir=settings.WEB['js_dir'],
+                        app_css_dir=settings.WEB['css_dir'],
+                        app_template_dir=settings.WEB['template_dir'],
                         title=self.GetTitle(), sessionid=sid,
                         edit_url=rgw_consts.URLs.APP_EDIT_SWITCH[1:])
         except models.AccessOverLimit:
@@ -797,9 +797,9 @@ class AppZbModuleAdm(UIBase):
             await api_req_limit.CheckHTTP(self)
             sid = await CheckRight(self)
             self.render(rgw_consts.TPL_NAMES.APP_ADM_ZB_MODULE,
-                        app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                        app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                        app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                        app_js_dir=settings.WEB['js_dir'],
+                        app_css_dir=settings.WEB['css_dir'],
+                        app_template_dir=settings.WEB['template_dir'],
                         title=self.GetTitle(),
                         sync_zb_dev_url=rgw_consts.URLs.APP_SYNC_ZB_DEVICE[1:],
                         restore_module_url=rgw_consts.URLs.APP_RESTORE_ZB_MODULE[1:],
@@ -820,9 +820,9 @@ class AppRestoreZbModule(UIBase):
             sid = await CheckRight(self)
             moduleid = self.get_argument("moduleid")
             self.render(rgw_consts.TPL_NAMES.APP_RESTORE_ZB_MODULE,
-                        app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                        app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                        app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                        app_js_dir=settings.WEB['js_dir'],
+                        app_css_dir=settings.WEB['css_dir'],
+                        app_template_dir=settings.WEB['template_dir'],
                         title=self.GetTitle(),
                         target_moduleid=moduleid,
                         sessionid=sid)
@@ -844,9 +844,9 @@ class AppEditZbDevice(UIBase):
             if edit_mode == "edit":
                 deviceid = self.get_argument("deviceid")
                 self.render(rgw_consts.TPL_NAMES.APP_EDIT_ZB_DEVICE,
-                            app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                            app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                            app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                            app_js_dir=settings.WEB['js_dir'],
+                            app_css_dir=settings.WEB['css_dir'],
+                            app_template_dir=settings.WEB['template_dir'],
                             title="Edit Zigbee Device",
                             edit_mode=edit_mode, deviceid=deviceid,
                             device_no_tbls=self.GetDeviceNoTbls(),
@@ -868,9 +868,9 @@ class AppZbDeviceAdm(UIBase):
             await api_req_limit.CheckHTTP(self)
             sid = await CheckRight(self)
             self.render(rgw_consts.TPL_NAMES.APP_ADM_ZB_DEVICE,
-                        app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                        app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                        app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                        app_js_dir=settings.WEB['js_dir'],
+                        app_css_dir=settings.WEB['css_dir'],
+                        app_template_dir=settings.WEB['template_dir'],
                         title=self.GetTitle(),
                         edit_zb_dev_url=rgw_consts.URLs.APP_EDIT_ZB_DEVICE[1:],
                         recap_zb_dev_url=rgw_consts.URLs.APP_RECAP_ZB_DEVICE[1:],
@@ -894,9 +894,9 @@ class AppSyncZbDevice(UIBase):
             sid = await CheckRight(self)
             moduleid = self.get_argument("moduleid")
             self.render(rgw_consts.TPL_NAMES.APP_SYNC_ZB_DEVICE,
-                        app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                        app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                        app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                        app_js_dir=settings.WEB['js_dir'],
+                        app_css_dir=settings.WEB['css_dir'],
+                        app_template_dir=settings.WEB['template_dir'],
                         title=self.GetTitle(),
                         moduleid=moduleid,
                         sessionid=sid)
@@ -918,9 +918,9 @@ class AppRecapZbDevice(UIBase):
             await api_req_limit.CheckHTTP(self)
             sid = await CheckRight(self)
             self.render(rgw_consts.TPL_NAMES.APP_RECAP_ZB_DEVICE,
-                        app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                        app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                        app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                        app_js_dir=settings.WEB['js_dir'],
+                        app_css_dir=settings.WEB['css_dir'],
+                        app_template_dir=settings.WEB['template_dir'],
                         title=self.GetTitle(),
                         device_no_tbls=self.GetDeviceNoTbls(),
                         sessionid=sid)
@@ -937,9 +937,9 @@ class AppDeviceOpLog(UIBase):
             sid = await CheckRight(self)
             deviceid = self.get_argument("deviceid")
             self.render(rgw_consts.TPL_NAMES.APP_DEVICE_OP_LOG,
-                        app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                        app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                        app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                        app_js_dir=settings.WEB['js_dir'],
+                        app_css_dir=settings.WEB['css_dir'],
+                        app_template_dir=settings.WEB['template_dir'],
                         title="Device Op Log",
                         deviceid=deviceid,
                         sessionid=sid)
@@ -955,9 +955,9 @@ class AppDeviceOpErrorCount(UIBase):
             await api_req_limit.CheckHTTP(self)
             sid = await CheckRight(self)
             self.render(rgw_consts.TPL_NAMES.APP_DEVICE_OP_ERROR_COUNT,
-                        app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                        app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                        app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                        app_js_dir=settings.WEB['js_dir'],
+                        app_css_dir=settings.WEB['css_dir'],
+                        app_template_dir=settings.WEB['template_dir'],
                         title="Device Op Error Count",
                         op_log_url=rgw_consts.URLs.APP_DEVICE_OP_LOG[1:],
                         sessionid=sid)
@@ -1032,9 +1032,9 @@ class AppEditSensorTrigger(UIBase):
             switch_tbls = await self.GetSwitchTbls()
             label_tbl = self.GetLabelTbl()[ulang]
             self.render(rgw_consts.TPL_NAMES.APP_EDIT_SENSOR_TRIGGER,
-                        app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                        app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                        app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                        app_js_dir=settings.WEB['js_dir'],
+                        app_css_dir=settings.WEB['css_dir'],
+                        app_template_dir=settings.WEB['template_dir'],
                         title="Set Trigger", sessionid=sid,
                         label_tbl=label_tbl,
                         sensor_tbls=sensor_tbls,
@@ -1069,9 +1069,9 @@ class AppAdmSensorTrigger(UIBase):
             ulang = GetLangCode(self)
             label_tbl = self.GetLabel()
             self.render(rgw_consts.TPL_NAMES.APP_ADM_SENSOR_TRIGGER,
-                        app_js_dir=g_vars.g_cfg['web']['js_dir'],
-                        app_css_dir=g_vars.g_cfg['web']['css_dir'],
-                        app_template_dir=g_vars.g_cfg['web']['template_dir'],
+                        app_js_dir=settings.WEB['js_dir'],
+                        app_css_dir=settings.WEB['css_dir'],
+                        app_template_dir=settings.WEB['template_dir'],
                         title=self.GetTitle(), sessionid=sid,
                         user_lang=ulang,
                         label_tbl=label_tbl[ulang],

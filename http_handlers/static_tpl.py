@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os.path as os_path
 import cyclone.web as cyclone_web
-import g_vars
+import settings
 import rgw_consts
 
 
@@ -57,7 +57,7 @@ class JsHandler(AbstractHandler):
         self.set_header('Content-Type', 'text/javascript')
 
     def get_template_path(self):
-        return os_path.join(g_vars.g_cfg['web']['static_path'], g_vars.g_cfg['web']['js_dir'])
+        return os_path.join(settings.WEB['static_path'], settings.WEB['js_dir'])
 
 
 class CssHandler(AbstractHandler):
@@ -65,7 +65,7 @@ class CssHandler(AbstractHandler):
         self.set_header('Content-Type', 'text/css')
 
     def get_template_path(self):
-        return os_path.join(g_vars.g_cfg['web']['static_path'], g_vars.g_cfg['web']['css_dir'])
+        return os_path.join(settings.WEB['static_path'], settings.WEB['css_dir'])
 
 
 class DojoTplHandler(AbstractHandler):
@@ -73,5 +73,5 @@ class DojoTplHandler(AbstractHandler):
         self.set_header('Content-Type', 'text/html')
 
     def get_template_path(self):
-        return os_path.join(g_vars.g_cfg['web']['static_path'], g_vars.g_cfg['web']['template_dir'])
+        return os_path.join(settings.WEB['static_path'], settings.WEB['template_dir'])
 

@@ -1,4 +1,3 @@
-import time
 import sys
 import sqlite3
 import base64

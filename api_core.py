@@ -3,6 +3,7 @@ from twisted.internet import defer, error
 import txredisapi
 import treq
 import rg_lib
+import settings
 import models
 import rgw_consts
 
@@ -29,7 +30,7 @@ class BizDB:
         return rg_lib.Sqlite.RunInteraction(cls.db_pool, sql_rows)
 
     @classmethod
-    def Init(cls, cfg):
+    def Init(cls):
         def helper(conn_obj):
             conn_obj.execute("BEGIN")
             models.SysCfg.Init(conn_obj)
@@ -39,9 +40,9 @@ class BizDB:
             models.SwitchSchedule.Init(conn_obj)
             models.SwitchAction.Init(conn_obj)
 
-        cls.db_pool = rg_lib.Sqlite.MakeConnPool(cfg['db']['biz']['db_path'])
-        cls.redis_conn = txredisapi.lazyConnectionPool(host=cfg['redis']['host'],
-                                                       port=cfg['redis']['port'],
+        cls.db_pool = rg_lib.Sqlite.MakeConnPool(settings.BIZ_DB['path'])
+        cls.redis_conn = txredisapi.lazyConnectionPool(host=settings.REDIS['host'],
+                                                       port=settings.REDIS['port'],
                                                        charset=None,
                                                        convertNumbers=False)
         return cls.db_pool.runWithConnection(helper)
@@ -72,7 +73,7 @@ class LogDB:
         return await rg_lib.Sqlite.RunQuery(cls.db_pool, [sql_row])
 
     @classmethod
-    def Init(cls, cfg):
+    def Init(cls):
         def helper(conn_obj):
             conn_obj.execute("BEGIN")
             models.SensorData.Init(conn_obj)
@@ -80,7 +81,7 @@ class LogDB:
             models.TriggerLog.Init(conn_obj)
             models.SensorAvgData.Init(conn_obj)
 
-        cls.db_pool = rg_lib.Sqlite.MakeConnPool(cfg['db']['log']['db_path'])
+        cls.db_pool = rg_lib.Sqlite.MakeConnPool(settings.LOG_DB['path'])
         return cls.db_pool.runWithConnection(helper)
 
     @classmethod

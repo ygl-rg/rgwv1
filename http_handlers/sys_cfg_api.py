@@ -5,7 +5,7 @@ import api_core
 import api_req_limit
 import api_xy_device
 import api_auth
-import g_vars
+import settings
 
 
 async def SetCfg(req_handler, para):
@@ -18,7 +18,7 @@ async def SetCfg(req_handler, para):
         await api_req_limit.CheckHTTP(req_handler)
         await api_auth.CheckRight(para['token'])
         await api_core.SysCfg.Set(para['cfg'])
-        reactor.callLater(3, defer.ensureDeferred, api_core.PageKite.RestartBackend(g_vars.g_cfg['http_port']))
+        reactor.callLater(3, defer.ensureDeferred, api_core.PageKite.RestartBackend(settings.HTTP_PORT))
         return "ok"
     except Exception:
         rg_lib.Cyclone.HandleErrInException()

@@ -1,5 +1,6 @@
 import sqlite3
 import rg_lib
+import settings
 import models
 
 
@@ -24,11 +25,11 @@ def SetRXG(connid):
     connid.execute("insert into rgw_sys_cfg(key,val) values(?,?)", ("gw_url", "http://localhost:8000"))
 
 
-def main(db_path):
-    with rg_lib.DbConnWrap(sqlite3.connect(db_path, check_same_thread=False)) as conn:
+def main():
+    with rg_lib.DbConnWrap(sqlite3.connect(settings.BIZ_DB['path'], check_same_thread=False)) as conn:
         conn.conn_obj.execute("PRAGMA journal_mode=WAL")
         conn.conn_obj.execute("PRAGMA synchronous=1")
-    with rg_lib.DbConnWrap(sqlite3.connect(db_path, check_same_thread=False)) as conn:
+    with rg_lib.DbConnWrap(sqlite3.connect(settings.BIZ_DB['path'], check_same_thread=False)) as conn:
         conn.conn_obj.execute("drop table if exists rgw_sys_cfg")
         conn.conn_obj.execute(rg_lib.Sqlite.CreateTable(models.SysCfg.TBL, models.SysCfg.TBL_FIELDS))
         SetPagekite(conn.conn_obj)
@@ -39,11 +40,6 @@ def main(db_path):
 
 
 if __name__ == "__main__":
-    import sys
-    if len(sys.argv) < 2:
-        print("need db")
-    else:
-        db_path = sys.argv[1]
-        main(db_path)
+    main()
 
 

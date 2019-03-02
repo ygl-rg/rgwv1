@@ -1,2 +1,2 @@
-# rgw3
-roundgis irrigation backend
+# rgwv1
+roundgis smart irrigation/lighting backend

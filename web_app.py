@@ -4,7 +4,7 @@ import rg_lib
 from http_handlers import plotting as plotting_handlers, static_tpl as static_tpl_handlers, ui as ui_handlers, \
     internal_api as api_handlers
 import rgw_consts
-import g_vars
+import settings
 
 
 def GetStaticHandlers(static_path, export_path):
@@ -17,9 +17,9 @@ def GetStaticHandlers(static_path, export_path):
 
 def GetStaticTplHandlers():
     return [
-        (rg_lib.Cyclone.Dir2Url(g_vars.g_cfg['web']['js_dir']), static_tpl_handlers.JsHandler),
-        (rg_lib.Cyclone.Dir2Url(g_vars.g_cfg['web']['css_dir']), static_tpl_handlers.CssHandler),
-        (rg_lib.Cyclone.Dir2Url(g_vars.g_cfg['web']['template_dir']), static_tpl_handlers.DojoTplHandler)
+        (rg_lib.Cyclone.Dir2Url(settings.WEB['js_dir']), static_tpl_handlers.JsHandler),
+        (rg_lib.Cyclone.Dir2Url(settings.WEB['css_dir']), static_tpl_handlers.CssHandler),
+        (rg_lib.Cyclone.Dir2Url(settings.WEB['template_dir']), static_tpl_handlers.DojoTplHandler)
     ]
 
 
@@ -76,5 +76,5 @@ class App(cyclone_web.Application):
     def __init__(self, static_path, export_path):
         handlers = GetStaticHandlers(static_path, export_path) + GetApi() + GetAPP() + GetViewHandlers() + GetStaticTplHandlers()
         cyclone_web.Application.__init__(self, handlers, gzip=True,
-                                         template_path=os_path.join(g_vars.g_cfg['web']['static_path'],
-                                                                    g_vars.g_cfg['web']['tpl_dir']))
+                                         template_path=os_path.join(settings.WEB['static_path'],
+                                                                    settings.WEB['tpl_dir']))
